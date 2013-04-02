@@ -23,7 +23,6 @@ import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.matt.remotenotifier.DeviceCoordinator.DeviceHolder;
 
 // Look, I'm all grown up and have extended my own class! :)
 public class OutgoingFragment extends ExpandableListFragment {	

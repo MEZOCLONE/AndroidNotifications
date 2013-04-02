@@ -17,7 +17,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.matt.remotenotifier.DeviceCoordinator.DeviceHolder;
 import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
 
 public class MainFragmentActivity extends FragmentActivity {

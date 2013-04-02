@@ -16,7 +16,6 @@ import android.text.format.DateFormat;
 import android.util.Log;
 
 import com.matt.remotenotifier.DeviceCoordinator.CommandHolder;
-import com.matt.remotenotifier.DeviceCoordinator.DeviceHolder;
 import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
 
 

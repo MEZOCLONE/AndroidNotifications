@@ -7,7 +7,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import com.matt.remotenotifier.DeviceCoordinator.DeviceHolder;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
