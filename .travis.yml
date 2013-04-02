@@ -27,4 +27,4 @@ before_script:
     - chmod 777 ./wait_for_emulator
     - ./wait_for_emulator
 
-script: mvn install -Pintegration-tests -Dandroid.device=test
+script: mvn clean install
