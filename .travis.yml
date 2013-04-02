@@ -27,4 +27,4 @@ before_script:
     - chmod 777 ./wait_for_emulator
     - ./wait_for_emulator
 
-script: mvn clean install
+script: mvn clean install android:deploy
