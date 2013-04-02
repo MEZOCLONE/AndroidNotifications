@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/outFragmentHolder"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="top"
+    android:orientation="vertical"
+    android:tag="outFragment" >
+
+    <TextView
+        android:id="@+id/connectionText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:gravity="center"
+        android:background="@color/haloDarkBlue"
+        android:text="Control Devices"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="14sp" />
+
+    <ExpandableListView
+        android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/connectionText"
+        android:layout_centerHorizontal="true"
+        android:divider="@android:color/transparent"
+        android:footerDividersEnabled="false"
+        android:groupIndicator="@drawable/group_indicator"
+        android:headerDividersEnabled="false"
+        android:paddingTop="8dp" >
+
+    </ExpandableListView>
+
+</RelativeLayout>

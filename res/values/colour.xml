@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<color name="rbm_menu_background">#303030</color>
+	<color name="rbm_item_text_color">#ffffff</color>
+	<color name="White">#FFFFFF</color>
+	<color name="Black">#000000</color>
+	<color name="haloDarkGreen">#669900</color>
+	<color name="haloLightGreen">#99CC00</color>
+	<color name="haloLightBlue">#33B5E5</color>
+	<color name="haloDarkBlue">#0099CC</color>
+	<color name="haloLightPurple">#AA66CC</color>
+	<color name="haloDarkPurple">#9933CC</color>
+	<color name="haloLightOrange">#FFBB33</color>
+	<color name="haloDarkOrange">#FF8800</color>
+	<color name="haloLightRed">#FF4444</color>
+	<color name="haloDarkRed">#CC0000</color>
+	<color name="haloBG">#33333360</color>
+	<color name="thatGreyColour">#dddddd</color>
+	<color name="darkerGrey">#828282</color>
+</resources>

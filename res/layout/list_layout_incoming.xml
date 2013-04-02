@@ -1,0 +1,52 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/relListItem"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    tools:context=".NotifAdaptor" >
+
+    <LinearLayout
+        android:id="@+id/TextHolder"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/icon"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/mainLine"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:text="Placeholder for main line"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/incomingNotifTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Time Since Notif"
+            android:textColor="@color/darkerGrey"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/secondLine"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="false"
+            android:text="Placeholder for second line"
+            android:textColor="@color/darkerGrey"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:layout_marginRight="2dp"
+        android:layout_marginTop="5dp"
+        android:layout_weight="18.50"
+        android:adjustViewBounds="true"
+        android:src="@color/haloDarkGreen" />
+
+</RelativeLayout>

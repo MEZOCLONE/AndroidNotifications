@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/relExpListItem"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <TextView
+        android:id="@+id/textChildControl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="23dp"
+        android:text="Placeholder Text"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textStyle="bold" />
+
+    <ProgressBar
+        android:id="@+id/pbJobProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textChildControl"
+        android:layout_alignRight="@+id/textChildControl"
+        android:layout_below="@+id/textChildControl"
+        android:indeterminate="true"
+        android:indeterminateBehavior="cycle"
+        android:maxHeight="16dp"
+        android:minHeight="16dp"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/textSceduledTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/pbJobProgress"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="20dp"
+        android:text="(10:00)"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+</RelativeLayout>

@@ -1,0 +1,5 @@
+<resources>
+    <string name="itemSettings">Settings</string>
+    <string name="title_activity_main">Remote Notifier</string>
+	<string name="app_name">Remote Notifier</string>
+</resources>
