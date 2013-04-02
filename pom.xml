@@ -40,8 +40,7 @@
 				<artifactId>android-maven-plugin</artifactId>
 				<configuration>
 					<sdk>
-						<!-- platform or api level (api level 4 = platform 1.6) -->
-						<platform>${android.version}</platform>
+						<platform>17</platform>
 					</sdk>
 				</configuration>
 			</plugin>
