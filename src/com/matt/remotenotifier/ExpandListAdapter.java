@@ -16,7 +16,6 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.matt.remotenotifier.JobCoordinator.JobHolder;
 
 public class ExpandListAdapter extends BaseExpandableListAdapter  {
 	private static final String TAG = "ExpandListAdapter";

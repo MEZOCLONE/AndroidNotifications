@@ -6,7 +6,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.matt.remotenotifier.DeviceCoordinator.CommandHolder;
 import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
 
 class DeviceHolder{
@@ -93,14 +92,14 @@ class DeviceHolder{
 		JSONArray commandArray = commandList.getJSONArray("commands");
 		for(int i=0; i < commandArray.length(); ++i){
 			JSONObject j = commandArray.getJSONObject(i);
-			CommandHolder com = this.deviceCoordinator.new CommandHolder(j.getString("name"),j.getString("com"));
+			CommandHolder com = new CommandHolder(j.getString("name"),j.getString("com"));
 			commandListing.add(com);
 			com.addArguments(j);
 		}
 	}
 	
 	protected void addCommand(String name, String command){
-		CommandHolder com = this.deviceCoordinator.new CommandHolder(name, command);
+		CommandHolder com = new CommandHolder(name, command);
 		commandListing.add(com);
 	}
 	
