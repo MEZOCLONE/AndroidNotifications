@@ -5,7 +5,7 @@
  http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.matt.remotenotifier</groupId>
-	<artifactId>RemoteNotifier</artifactId>
+	<artifactId>RemoteNotifierMaster</artifactId>
 	<version>1</version>
 	<packaging>apk</packaging>
 	<name>Remote Notifier</name>
