@@ -87,6 +87,10 @@ public class IncomingFragment extends ListFragment {
 	}
 	
 	public void hideConnectionMessages(){
-		progressBar.setVisibility(View.GONE);
+		try{
+			progressBar.setVisibility(View.GONE);
+		}catch(Exception e){
+			Log.e(TAG, "Error hiding progress bar on connect", e);
+		}
 	}
 }

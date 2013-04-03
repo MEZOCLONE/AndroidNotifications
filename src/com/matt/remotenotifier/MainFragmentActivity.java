@@ -79,16 +79,18 @@ public class MainFragmentActivity extends FragmentActivity {
 		deviceCoordinator = DeviceCoordinator.getInstance(mPusher, outgoingFragment, PRIVATE_CHANNEL);
 		jobCoordinator = JobCoordinator.getInstance(mPusher, PRIVATE_CHANNEL);
 		
-		if(!savedInstanceState.isEmpty()){
-			ArrayList<DeviceHolder> deviceList = (ArrayList<DeviceHolder>) savedInstanceState.getSerializable("deviceList");
-			ArrayList<JobHolder> jobList = (ArrayList<JobHolder>) savedInstanceState.getSerializable("jobList");
-			try {
-				Log.i(TAG, "Expecting Device Coordinator active onRestore");
-				deviceCoordinator.restoreDeviceHolderList(deviceList);
-				Log.i(TAG, "Expecting Job Coordinator active onRestore");
-				jobCoordinator.restoreJobHolderList(jobList);
-			} catch (NotActiveException e) {
-				Log.w(TAG, "Coordinator not active at time of restore", e);
+		if(savedInstanceState != null){
+			if(!savedInstanceState.isEmpty()){
+				ArrayList<DeviceHolder> deviceList = (ArrayList<DeviceHolder>) savedInstanceState.getSerializable("deviceList");
+				ArrayList<JobHolder> jobList = (ArrayList<JobHolder>) savedInstanceState.getSerializable("jobList");
+				try {
+					Log.i(TAG, "Expecting Device Coordinator active onRestore");
+					deviceCoordinator.restoreDeviceHolderList(deviceList);
+					Log.i(TAG, "Expecting Job Coordinator active onRestore");
+					jobCoordinator.restoreJobHolderList(jobList);
+				} catch (NotActiveException e) {
+					Log.w(TAG, "Coordinator not active at time of restore", e);
+				}
 			}
 		}
 
