@@ -58,6 +58,25 @@ public class DeviceCoordinator {
 		}
 	}
 	
+	public ArrayList<DeviceHolder> getDeviceHolderList() throws NotActiveException{
+		if(instance != null){
+			return deviceList;
+		}else{
+			throw new NotActiveException("Device Coordinator not yet active");
+		}
+		
+	}
+	
+	public void restoreDeviceHolderList(ArrayList<DeviceHolder> deviceList) throws NotActiveException{
+		if(instance != null){
+			this.deviceList = deviceList;
+			deviceCount = deviceList.size();
+			updateControl();
+		}else{
+			throw new NotActiveException("Device Coordinator not yet active");
+		}
+	}
+	
 	public boolean deviceHolderExists(String deviceName, DeviceType deviceType){
 		DeviceHolder device = new DeviceHolder(this, deviceName, deviceType);
 		return deviceList.contains(device);

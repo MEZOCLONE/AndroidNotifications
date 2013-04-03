@@ -1,5 +1,7 @@
 package com.matt.remotenotifier;
 
+import java.io.NotActiveException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -76,6 +78,16 @@ public class MainFragmentActivity extends FragmentActivity {
 		//Once the connection to Pusher has been established, initialise the device coordinator
 		deviceCoordinator = DeviceCoordinator.getInstance(mPusher, outgoingFragment, PRIVATE_CHANNEL);
 		jobCoordinator = JobCoordinator.getInstance(mPusher, PRIVATE_CHANNEL);
+		
+		if(!savedInstanceState.isEmpty()){
+			ArrayList<DeviceHolder> deviceList = (ArrayList<DeviceHolder>) savedInstanceState.getSerializable("deviceList");
+			try {
+				Log.i(TAG, "Expecting Device Coordinator active onRestore");
+				deviceCoordinator.restoreDeviceHolderList(deviceList);
+			} catch (NotActiveException e) {
+				Log.w(TAG, "Device Coordinator not active at time of pause", e);
+			}
+		}
 
 		// bindAll here so that we receive notifications form the global channel
 		mPusher.bindAll(new PusherCallback() {
@@ -313,7 +325,6 @@ public class MainFragmentActivity extends FragmentActivity {
 				Log.d(TAG, e.getMessage());
 			}
 		case R.id.itemRequestDevices:
-			// This is just a test, but has to be done in a seperate thread...
 			Thread pusherPollDevicesManual = new Thread(new Runnable() {
 				JSONObject jObject = null;
 				@Override
@@ -336,6 +347,18 @@ public class MainFragmentActivity extends FragmentActivity {
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+	
+	protected void onPause(){
+		Bundle b = new Bundle();
+		ArrayList<DeviceHolder> deviceList = new ArrayList<DeviceHolder>();
+		try {
+			Log.i(TAG, "Expecting Device Coordinator active onPause");
+			deviceList = deviceCoordinator.getDeviceHolderList();
+		} catch (NotActiveException e) {
+			Log.w(TAG, "Device Coordinator not active at time of pause", e);
+		}
+		b.putSerializable("deviceList", deviceList);
 	}
 
 	@Override

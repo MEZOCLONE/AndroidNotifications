@@ -11,12 +11,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.net.ParseException;
-import android.text.format.DateFormat;
-import android.util.Log;
-
 import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
 
+import android.net.ParseException;
+import android.util.Log;
+
+<<<<<<< Updated upstream
+import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
+
+=======
+>>>>>>> Stashed changes
 
 /*
  * Singleton instance - Use getInstance

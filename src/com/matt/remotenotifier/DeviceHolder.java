@@ -1,5 +1,6 @@
 package com.matt.remotenotifier;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
@@ -8,11 +9,14 @@ import org.json.JSONObject;
 
 import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
 
-class DeviceHolder{
-			
-	/**
-	 * 
-	 */
+class DeviceHolder implements Serializable{
+
+	private static final long serialVersionUID = 4944535428907433023L;
+	private String deviceName;
+	private DeviceType deviceType;
+	private ArrayList<CommandHolder> commandListing;
+	private Long lastHeatbeatTime;
+	private boolean hasHeartbeat = false;
 	private final DeviceCoordinator deviceCoordinator;
 
 	/* (non-Javadoc)
@@ -61,12 +65,6 @@ class DeviceHolder{
 	public String toString() {
 		return "DeviceHolder [deviceName=" + deviceName + "]";
 	}
-
-	private String deviceName;
-	private DeviceType deviceType;
-	private ArrayList<CommandHolder> commandListing;
-	private Long lastHeatbeatTime;
-	private boolean hasHeartbeat = false;
 	
 	public DeviceHolder(DeviceCoordinator deviceCoordinator, String deviceName, DeviceType deviceType){
 		this.deviceCoordinator = deviceCoordinator;
