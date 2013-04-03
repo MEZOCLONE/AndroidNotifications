@@ -11,16 +11,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
-
 import android.net.ParseException;
 import android.util.Log;
 
-<<<<<<< Updated upstream
 import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
-
-=======
->>>>>>> Stashed changes
 
 /*
  * Singleton instance - Use getInstance
@@ -56,6 +50,23 @@ public class JobCoordinator {
 			return instance;
 		}else{
 			return instance = new JobCoordinator(pusher, registeredChannelName);
+		}
+	}
+	
+	public ArrayList<JobHolder> getJobHolderList() throws NotActiveException{
+		if(instance != null){
+			return jobList;
+		}else{
+			throw new NotActiveException("Job Coordinator not yet active");
+		}
+	}
+	
+	public void restoreJobHolderList(ArrayList<JobHolder> jobList) throws NotActiveException{
+		if(instance != null){
+			this.jobList = jobList;
+			jobCount = jobList.size();
+		}else{
+			throw new NotActiveException("Job Coordinator not yet active");
 		}
 	}
 	

@@ -1,10 +1,10 @@
 package com.matt.remotenotifier;
 
-class JobHolder{
+import java.io.Serializable;
 
-	/**
-	 * 
-	 */
+class JobHolder implements Serializable{
+
+	private static final long serialVersionUID = -723350147229888172L;
 	private final JobCoordinator jobCoordinator;
 
 	/* (non-Javadoc)

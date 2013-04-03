@@ -81,11 +81,14 @@ public class MainFragmentActivity extends FragmentActivity {
 		
 		if(!savedInstanceState.isEmpty()){
 			ArrayList<DeviceHolder> deviceList = (ArrayList<DeviceHolder>) savedInstanceState.getSerializable("deviceList");
+			ArrayList<JobHolder> jobList = (ArrayList<JobHolder>) savedInstanceState.getSerializable("jobList");
 			try {
 				Log.i(TAG, "Expecting Device Coordinator active onRestore");
 				deviceCoordinator.restoreDeviceHolderList(deviceList);
+				Log.i(TAG, "Expecting Job Coordinator active onRestore");
+				jobCoordinator.restoreJobHolderList(jobList);
 			} catch (NotActiveException e) {
-				Log.w(TAG, "Device Coordinator not active at time of pause", e);
+				Log.w(TAG, "Coordinator not active at time of restore", e);
 			}
 		}
 
@@ -352,13 +355,17 @@ public class MainFragmentActivity extends FragmentActivity {
 	protected void onPause(){
 		Bundle b = new Bundle();
 		ArrayList<DeviceHolder> deviceList = new ArrayList<DeviceHolder>();
+		ArrayList<JobHolder> jobList = new ArrayList<JobHolder>();
 		try {
 			Log.i(TAG, "Expecting Device Coordinator active onPause");
 			deviceList = deviceCoordinator.getDeviceHolderList();
+			Log.i(TAG, "Expecting Job Coordinator active onPause");
+			jobList = jobCoordinator.getJobHolderList();
 		} catch (NotActiveException e) {
-			Log.w(TAG, "Device Coordinator not active at time of pause", e);
+			Log.w(TAG, "Coordinator not active at time of pause", e);
 		}
 		b.putSerializable("deviceList", deviceList);
+		b.putSerializable("jobList", jobList);
 	}
 
 	@Override
