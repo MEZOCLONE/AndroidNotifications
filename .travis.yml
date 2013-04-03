@@ -37,4 +37,4 @@ script: mvn clean install android:deploy
 after_success:
  - chmod 777 ./uploadArtifact.sh
  - chmod 777 ./dropbox_uploader.sh
- -./uploadArtifact.sh
+ -. /uploadArtifact.sh
