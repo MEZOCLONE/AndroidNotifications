@@ -80,6 +80,7 @@ public class MainFragmentActivity extends FragmentActivity {
 		jobCoordinator = JobCoordinator.getInstance(mPusher, PRIVATE_CHANNEL);
 		
 		if(savedInstanceState != null){
+			Log.i(TAG, "Resuming Saved Sate");
 			if(!savedInstanceState.isEmpty()){
 				ArrayList<DeviceHolder> deviceList = (ArrayList<DeviceHolder>) savedInstanceState.getSerializable("deviceList");
 				ArrayList<JobHolder> jobList = (ArrayList<JobHolder>) savedInstanceState.getSerializable("jobList");
@@ -92,6 +93,8 @@ public class MainFragmentActivity extends FragmentActivity {
 					Log.w(TAG, "Coordinator not active at time of restore", e);
 				}
 			}
+		}else{
+			Log.i(TAG, "Saved Instance State was Null");
 		}
 
 		// bindAll here so that we receive notifications form the global channel
@@ -130,6 +133,8 @@ public class MainFragmentActivity extends FragmentActivity {
 								deviceCoordinator.addCommandsToDevice(device, eventData);
 								incomingFragment.mAdaptor.addItem("Device "+device.getDeviceName()+" registered", "", R.color.haloLightOrange, 120, now);
 							}
+						}else{
+							Log.i(TAG, "Device ["+device.getDeviceName()+"] is already registered. Ingorning");
 						}
 					}catch(Exception e){
 						Log.e(TAG, "Unable to parse register_device event ["+e.getLocalizedMessage()+"]");
@@ -354,7 +359,9 @@ public class MainFragmentActivity extends FragmentActivity {
 		}
 	}
 	
+	@Override
 	protected void onPause(){
+		super.onPause();
 		Bundle b = new Bundle();
 		ArrayList<DeviceHolder> deviceList = new ArrayList<DeviceHolder>();
 		ArrayList<JobHolder> jobList = new ArrayList<JobHolder>();
@@ -363,11 +370,13 @@ public class MainFragmentActivity extends FragmentActivity {
 			deviceList = deviceCoordinator.getDeviceHolderList();
 			Log.i(TAG, "Expecting Job Coordinator active onPause");
 			jobList = jobCoordinator.getJobHolderList();
+			
+			b.putSerializable("deviceList", deviceList);
+			b.putSerializable("jobList", jobList);
+			
 		} catch (NotActiveException e) {
 			Log.w(TAG, "Coordinator not active at time of pause", e);
 		}
-		b.putSerializable("deviceList", deviceList);
-		b.putSerializable("jobList", jobList);
 	}
 
 	@Override

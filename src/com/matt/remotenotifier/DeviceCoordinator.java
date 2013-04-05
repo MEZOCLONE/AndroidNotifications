@@ -45,9 +45,6 @@ public class DeviceCoordinator {
 		deviceCount = 0;
 		deviceList = new ArrayList<DeviceHolder>();
 		this.registeredChannelName = registeredChannelName;
-		// Start the management threads. One looks after all heatbeats to the devices, the other is handle polling devices
-		deviceManagementThread(pusher, registeredChannelName);
-		deviceHeatbeatThread(pusher, registeredChannelName);
 		this.outgoingFragment = outgoingFragment;
 		mPusher = pusher;
 		try {
@@ -56,6 +53,10 @@ public class DeviceCoordinator {
 		} catch (JSONException e) {
 			Log.e(TAG, "Error creating jObject", e);
 		}
+
+		// Start the management threads. One looks after all heatbeats to the devices, the other is handle polling devices
+		deviceManagementThread(pusher, registeredChannelName);
+		deviceHeatbeatThread(pusher, registeredChannelName);
 	}
 	
 	public ArrayList<DeviceHolder> getDeviceHolderList() throws NotActiveException{
