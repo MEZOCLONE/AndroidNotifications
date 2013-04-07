@@ -4,9 +4,6 @@ import java.io.Serializable;
 
 class JobHolder implements Serializable{
 
-	private static final long serialVersionUID = -723350147229888172L;
-	private final JobCoordinator jobCoordinator;
-
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -14,11 +11,9 @@ class JobHolder implements Serializable{
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + getOuterType().hashCode();
-		result = prime * result
-				+ ((jobName == null) ? 0 : jobName.hashCode());
 		result = prime * result
 				+ (int) (jobCreateTime ^ (jobCreateTime >>> 32));
+		result = prime * result + jobId;
 		return result;
 	}
 
@@ -34,18 +29,14 @@ class JobHolder implements Serializable{
 		if (getClass() != obj.getClass())
 			return false;
 		JobHolder other = (JobHolder) obj;
-		if (!getOuterType().equals(other.getOuterType()))
-			return false;
-		if (jobName == null) {
-			if (other.jobName != null)
-				return false;
-		} else if (!jobName.equals(other.jobName))
-			return false;
 		if (jobCreateTime != other.jobCreateTime)
+			return false;
+		if (jobId != other.jobId)
 			return false;
 		return true;
 	}
 
+	private static final long serialVersionUID = -723350147229888172L;
 	private int jobId;
 	private int jobProgress;
 	private int deviceId;
@@ -58,8 +49,7 @@ class JobHolder implements Serializable{
 	private String runDateTime;
 	private CommandHolder jobCommandHolder;
 	
-	public JobHolder(JobCoordinator jobCoordinator, String jobName, CommandHolder jobCommand, int deviceId){
-		this.jobCoordinator = jobCoordinator;
+	public JobHolder(String jobName, CommandHolder jobCommand, int deviceId){
 		this.jobName = jobName;
 		this.deviceId = deviceId;
 		this.jobCommandHolder = jobCommand;
@@ -68,10 +58,7 @@ class JobHolder implements Serializable{
 		jobRecieved = false;
 		jobProgress = 0;	
 		jobStatus = 0;
-	}
-
-	private JobCoordinator getOuterType() {
-		return this.jobCoordinator;
+		runDateTime = "";
 	}
 
 	/**

@@ -22,6 +22,11 @@
 			<artifactId>support-v4</artifactId>
 			<version>r6</version>
 		</dependency>
+		<!--dependency>
+			<groupId>com.jayway.android.robotium</groupId>
+			<artifactId>robotium-solo</artifactId>
+			<version>4.0</version>
+		</dependency-->
 	</dependencies>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
@@ -41,8 +46,8 @@
 				<artifactId>android-maven-plugin</artifactId>
 				<configuration>
 					<sign>
-            					<debug>true</debug>
-        				</sign>
+						<debug>true</debug>
+					</sign>
 					<sdk>
 						<platform>16</platform>
 					</sdk>

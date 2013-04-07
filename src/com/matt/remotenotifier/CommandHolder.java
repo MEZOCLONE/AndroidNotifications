@@ -1,5 +1,6 @@
 package com.matt.remotenotifier;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
@@ -9,7 +10,53 @@ import org.json.JSONObject;
 import android.util.Log;
 
 
-class CommandHolder{
+class CommandHolder implements Serializable {
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((argumentListing == null) ? 0 : argumentListing.hashCode());
+		result = prime * result + ((command == null) ? 0 : command.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		CommandHolder other = (CommandHolder) obj;
+		if (argumentListing == null) {
+			if (other.argumentListing != null)
+				return false;
+		} else if (!argumentListing.equals(other.argumentListing))
+			return false;
+		if (command == null) {
+			if (other.command != null)
+				return false;
+		} else if (!command.equals(other.command))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
+	}
+
+	private static final long serialVersionUID = 4560648720023407165L;
 	private static final String TAG = "DeviceCoordinator - CommandHolder";
 	private String name;
 	private String command;
@@ -20,6 +67,7 @@ class CommandHolder{
 		this.name = name;
 		this.command = command;
 		argumentListing = new ArrayList<ArgumentHolder>();
+		associatedJobIds = new ArrayList<Integer>();
 	}
 
 	public String getName() {
@@ -51,9 +99,6 @@ class CommandHolder{
 	}
 	
 	public void addJobId(int jobId){
-		if(associatedJobIds == null){
-			associatedJobIds = new ArrayList<Integer>();
-		}
 		associatedJobIds.add(jobId);
 	}
 	
@@ -66,10 +111,11 @@ class CommandHolder{
 	}
 	
 	public int getAssociatedJobCount(){
-		if(associatedJobIds == null){
-			return 0;
-		}
 		return associatedJobIds.size();
+	}
+	
+	public ArrayList<Integer> getAssoicatedJobList() {
+		return associatedJobIds;
 	}
 	
 	protected void addArguments(JSONObject commandObj) throws JSONException{

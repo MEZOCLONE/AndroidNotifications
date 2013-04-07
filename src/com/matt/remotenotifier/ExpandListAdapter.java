@@ -94,6 +94,7 @@ public class ExpandListAdapter extends BaseExpandableListAdapter  {
 		if(jh != null){
 			view.textScheduledTime.setText("("+jh.getRunDateTime()+")");
 		}else{
+			
 			view.textScheduledTime.setText("");
 		}
 

@@ -16,13 +16,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 class IncomingNotificationAdaptor extends BaseAdapter {
-	private static String TAG = "IncomingNotifAdaptor";
 
-	private ArrayList<String> mData = new ArrayList<String>();
-	private ArrayList<String> sData = new ArrayList<String>();
-	private ArrayList<Integer> iconData = new ArrayList<Integer>();
-	private ArrayList<Integer> alphaData = new ArrayList<Integer>();
-	private ArrayList<Long> timeData = new ArrayList<Long>();
+	private static String TAG = "IncomingNotifAdaptor";
+	private ArrayList<EventHolder> eventList = new ArrayList<EventHolder>();
 	private LayoutInflater mInflater;
 	private Context ctx;
 
@@ -32,41 +28,15 @@ class IncomingNotificationAdaptor extends BaseAdapter {
 		mInflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	}
 	
-	public void addItem(String main, String sub, int colourResourseId, int alpha, Long time){
-		addMain(main);
-		addSub(sub);
-		addColour(colourResourseId);
-		addAlpha(alpha);
-		addTimeSince(time);
+	protected void addItem(String main, String sub, int colourResourseId, int alpha, Long time){
+		EventHolder eh = new EventHolder(main, sub, colourResourseId, alpha, time);
+		eventList.add(0, eh);
 		notifyDataSetChanged();
 	}
 	
-	/*
-	 * Note: This will update the UI directly after the colour change
-	 */
 	public void editColour(int newColourResourseId, int notifId){
-		iconData.set(notifId, newColourResourseId);
+		eventList.get(notifId).setIconResource(newColourResourseId);
 		notifyDataSetChanged();
-	}
-
-	private void addMain(String item) {
-		mData.add(0, item);
-	}
-	
-	private void addSub(String item) {
-		sData.add(0, item);
-	}
-	
-	private void addColour(int colour){
-		iconData.add(0, colour);
-	}
-	
-	private void addAlpha(int alpha){
-		alphaData.add(0, alpha);
-	}
-	
-	private void addTimeSince(Long timeAdded){
-		timeData.add(0, timeAdded);
 	}
 	
 	public CharSequence getTimeSince(Long timeData){
@@ -80,33 +50,33 @@ class IncomingNotificationAdaptor extends BaseAdapter {
 	}
 
 	public void remove(int i) {
-		mData.remove(i);
-		sData.remove(i);
-		iconData.remove(i);
-		alphaData.remove(i);
-		timeData.remove(i);
+		eventList.remove(i);
 		notifyDataSetChanged();
 	}
 	
 	public void clearAll(){
-		mData.clear();
-		sData.clear();
-		iconData.clear();
-		alphaData.clear();
-		timeData.clear();
+		eventList.clear();
 		notifyDataSetChanged();
 	}
 
 	public int getCount() {
-		return mData.size();
+		return eventList.size();
 	}
 
-	public String getItem(int position) {
-		return mData.get(position);
+	public EventHolder getItem(int position) {
+		return eventList.get(position);
 	}
 
 	public long getItemId(int position) {
 		return position;
+	}
+	
+	protected ArrayList<EventHolder> getEventList(){
+		return eventList;
+	}
+	
+	protected void restoreEventList(ArrayList<EventHolder> eventList){
+		this.eventList = eventList;
 	}
 
 	public View getView(int position, View convertView, ViewGroup parent) {
@@ -128,14 +98,14 @@ class IncomingNotificationAdaptor extends BaseAdapter {
 		} else {
 			view = (ViewHolder) convertView.getTag();
 		}
-		view.textMain.setText(mData.get(position));
-		view.textMain.setTextColor(Color.argb(alphaData.get(position), 255, 255, 255));
-		view.textSub.setText(sData.get(position));
-		view.textSub.setTextColor(Color.argb(alphaData.get(position), 255, 255, 255));
-		view.timeSince.setText(getTimeSince(timeData.get(position)));
-		view.timeSince.setTextColor(Color.argb(alphaData.get(position), 255, 255, 255));
-		view.rowIcon.setImageResource(iconData.get(position));
-		view.rowIcon.setAlpha(alphaData.get(position));
+		view.textMain.setText(eventList.get(position).getTextMain());
+		view.textMain.setTextColor(Color.argb(eventList.get(position).getAlphaData(), 255, 255, 255));
+		view.textSub.setText(eventList.get(position).getTextSub());
+		view.textSub.setTextColor(Color.argb(eventList.get(position).getAlphaData(), 255, 255, 255));
+		view.timeSince.setText(getTimeSince(eventList.get(position).getTimeData()));
+		view.timeSince.setTextColor(Color.argb(eventList.get(position).getAlphaData(), 255, 255, 255));
+		view.rowIcon.setImageResource(eventList.get(position).getIconResource());
+		view.rowIcon.setAlpha(eventList.get(position).getAlphaData());
 		
 		return convertView;
 	}

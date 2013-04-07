@@ -28,6 +28,11 @@ public class JobCoordinator {
 	private ArrayList<JobHolder> jobList;
 	private int jobCount;
 	
+	public static int UNKNOWN_JOB_STATUS = 0;
+	public static int SCHEDULED_JOB_STATUS = 1;
+	public static int COMPLETE_JOB_STATUS = 2;
+	public static int ERROR_JOB_STATUS = 3;
+	
 	protected JobCoordinator(Pusher pusher, String registeredChannelName) {
 		jobCount = 0;
 		mPusher = pusher;
@@ -39,6 +44,7 @@ public class JobCoordinator {
 
 	static public JobCoordinator getInstance() throws NotActiveException{
 		if(instance != null){
+			Log.d(TAG, "JobCoordinator already active. Returning instace");
 			return instance;
 		}else{
 			throw new NotActiveException("Job Coordinator not yet active");
@@ -47,9 +53,22 @@ public class JobCoordinator {
 	
 	static public JobCoordinator getInstance(Pusher pusher, String registeredChannelName){
 		if(instance != null){
+			Log.d(TAG, "JobCoordinator already active. Returning instace");
 			return instance;
 		}else{
 			return instance = new JobCoordinator(pusher, registeredChannelName);
+		}
+	}
+	
+	public void shutdown(AppPreferences appPrefs) throws NotActiveException {
+		if(instance != null){
+			Log.d(TAG, "JobCoordinator shutting down. Saving Job States");
+			appPrefs.setJobStore(jobList);
+			
+			instance = null;			
+		}else{
+			Log.w(TAG, "Shutdown requested but not yet active. This can only be called when not active!");
+			throw new NotActiveException("Job Coordinator not yet active");
 		}
 	}
 	
@@ -61,10 +80,17 @@ public class JobCoordinator {
 		}
 	}
 	
-	public void restoreJobHolderList(ArrayList<JobHolder> jobList) throws NotActiveException{
+	public void restoreJobHolderList(ArrayList<JobHolder> jobStoreList) throws NotActiveException{
 		if(instance != null){
-			this.jobList = jobList;
-			jobCount = jobList.size();
+			if(jobStoreList != null){
+				jobList = jobStoreList;
+				jobCount = jobStoreList.size();
+				Log.i(TAG, "JobList has been restored - Contains ["+jobCount+"] Jobs");
+				failPastJobs();
+			//	deviceCoordinator.updateControl();
+			}else{
+				Log.w(TAG, "JobStore list was null at time of restore. Not restoring");
+			}
 		}else{
 			throw new NotActiveException("Job Coordinator not yet active");
 		}
@@ -113,42 +139,49 @@ public class JobCoordinator {
 	}
 	
 	public JobHolder getLatestJobHolder(CommandHolder ch){
-		if(ch.getAssociatedJobCount() > 0){
-			ArrayList<JobHolder> sJh = new ArrayList<JobHolder>();
-			for(int i=0; i < ch.getAssociatedJobCount(); i++){
-				if ((getJobHolder(ch.getAssociatedJobId(i)).isJobComplete() == false) &&  (getJobHolder(ch.getAssociatedJobId(i)).getJobStatus() != 3)){
-					sJh.add(getJobHolder(ch.getAssociatedJobId(i)));
-				}
-			}
-			
-			if(sJh.size() == 0) {
-				Log.d(TAG, "All jobs for this commandHolder are complete");
-				return null;
-			}
-			
-			Collections.sort(sJh, new Comparator<JobHolder>() {
-	            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	            @Override
-	            public int compare(JobHolder jh1, JobHolder jh2) {
-	                try {
-	                    Date d1 = df.parse(jh1.getRunDateTime());
-	                    Date d2 = df.parse(jh2.getRunDateTime());
-	                    return d1.compareTo(d2);
-	                } catch (ParseException pe) {
-	                    Log.e(TAG, "Error comparing JobHolders");
-	                    return 0;
-	                } catch (java.text.ParseException e) {
-	                	Log.e(TAG, "Error comparing JobHolders");
-		                return 0;
+		ArrayList<JobHolder> sJh = new ArrayList<JobHolder>();
+		for(JobHolder job : jobList){
+			CommandHolder c = job.getCommandHolder();
+			if(ch.equals(c)){
+				
+				// Previous sessions jobs...
+				for(int i=0; i < c.getAssociatedJobCount(); i++){
+					if ((getJobHolder(c.getAssociatedJobId(i)).isJobComplete() == false) &&  (getJobHolder(c.getAssociatedJobId(i)).getJobStatus() != 3)){
+						sJh.add(getJobHolder(c.getAssociatedJobId(i)));
 					}
-	            }
-	        });
-			
-			return sJh.get(0);
-			
-		}else{
-			//Log.d(TAG, "CommandHolder has no assoicated jobs. Returning Null");
+				}
+				
+				// This sessions jobs...
+				for(int i=0; i < ch.getAssociatedJobCount(); i++){
+					if ((getJobHolder(ch.getAssociatedJobId(i)).isJobComplete() == false) &&  (getJobHolder(ch.getAssociatedJobId(i)).getJobStatus() != 3)){
+						sJh.add(getJobHolder(ch.getAssociatedJobId(i)));
+					}
+				}
+				
+				Collections.sort(sJh, new Comparator<JobHolder>() {
+		            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		            @Override
+		            public int compare(JobHolder jh1, JobHolder jh2) {
+		                try {
+		                    Date d1 = df.parse(jh1.getRunDateTime());
+		                    Date d2 = df.parse(jh2.getRunDateTime());
+		                    return d1.compareTo(d2);
+		                } catch (ParseException pe) {
+		                    Log.e(TAG, "Error comparing JobHolders");
+		                    return 0;
+		                } catch (java.text.ParseException e) {
+		                	Log.e(TAG, "Error comparing JobHolders");
+			                return 0;
+						}
+		            }
+		        });
+			}
+		}
+		if(sJh.size() == 0) {
+			//Log.d(TAG, "All jobs for this commandHolder are complete");
 			return null;
+		}else{
+			return sJh.get(0);
 		}
 	}
 	
@@ -161,7 +194,7 @@ public class JobCoordinator {
 	 */
 	public int createJob(String jobName, CommandHolder commandHolder, int deviceId){
 		int jobId;
-		JobHolder jh = new JobHolder(this, jobName, commandHolder, deviceId);
+		JobHolder jh = new JobHolder(jobName, commandHolder, deviceId);
 		if(!jobList.contains(jh)){
 			jobList.add(jh);
 			jobId = jobList.indexOf(jh);
@@ -175,7 +208,7 @@ public class JobCoordinator {
 	
 	public int createTimedJob(String jobName, CommandHolder commandHolder, int deviceId, String runDateTime){
 		int jobId;
-		JobHolder jh = new JobHolder(this, jobName, commandHolder, deviceId);
+		JobHolder jh = new JobHolder(jobName, commandHolder, deviceId);
 		if(!jobList.contains(jh)){
 			jobList.add(jh);
 			jobId = jobList.indexOf(jh);
@@ -216,7 +249,7 @@ public class JobCoordinator {
 							jObject.put("args", argArray);
 						}
 						
-						if(jh.getRunDateTime() != null){
+						if(!jh.getRunDateTime().isEmpty()){
 							jObject.put("dateTime", jh.getRunDateTime());
 							mPusher.sendEvent("client-execute_timed_job", jObject, registeredChannelName);
 						}else{
@@ -229,10 +262,10 @@ public class JobCoordinator {
 						
 						if(!jh.isJobRecieved()){
 							Log.w(TAG, "Job ["+jobId+"] on device ["+dh.getDeviceName()+"] took too long to respond with Ack. Failing Job");
-							jh.setJobStatus(3);
+							jh.setJobStatus(ERROR_JOB_STATUS);
 							//Toast toast = Toast.makeText(mainActivityContext, "Error with job ["+jh.getJobName()+"]", Toast.LENGTH_SHORT);
 						}else{
-							jh.setJobStatus(1);
+							jh.setJobStatus(SCHEDULED_JOB_STATUS);
 						}
 					} catch (JSONException e) {
 						Log.e(TAG, e.getMessage());
@@ -262,38 +295,53 @@ public class JobCoordinator {
 	public int handleJobAck(String deviceName, DeviceType deviceType, int jobId, String jobRetval){
 		JobHolder jh = jobList.get(jobId);
 		if(jh != null){
-			if(jh.getJobStatus() != 3){
+			if(jh.getJobStatus() != ERROR_JOB_STATUS){
 				if(!jh.isJobRecieved()){
 					Log.i(TAG, "Job with jobId ["+jobId+"] has been received & and scheduled");
 					jh.setJobRecieved();
-					jh.setJobStatus(1);
-					return 1;
+					jh.setJobStatus(SCHEDULED_JOB_STATUS);
+					return SCHEDULED_JOB_STATUS;
 				}else{
 					Log.i(TAG, "Job with jobId ["+jobId+"] is complete");
 					jh.setJobComplete();
-					jh.setJobStatus(2);
+					jh.setJobStatus(COMPLETE_JOB_STATUS);
 					deviceCoordinator.updateControl();
 					if(jobRetval != null){
 						Log.i(TAG, "Job returned data. Adding this to jobHolder");
 						jh.setJobRetval(jobRetval);
 					}
-					return 2;
+					return COMPLETE_JOB_STATUS;
 				}			
 			}else{
 				Log.w(TAG, "Previously errored job ["+jobId+"] has suddenly responded. Jobs status is now unknown!");
-				return 0;
+				return UNKNOWN_JOB_STATUS;
 			}
 		}	
 		Log.wtf(TAG, "Unknown status for job ["+jobId+"]");
-		return 0;
+		return UNKNOWN_JOB_STATUS;
+	}
+	
+	private void failPastJobs(){
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		for(JobHolder job : jobList){
+	        try {
+				Date d = df.parse(job.getRunDateTime());
+				Date now = new Date();
+				if((d.before(now) && (job.isJobRecieved()) && (!job.isJobComplete()))){
+					failJob(job.getJobId());
+				}
+			} catch (Exception e) {
+				Log.i(TAG, "This is not a timed job. Skipping and not failing.");
+			}	        
+        }
 	}
 
 	public boolean failJob(int jobId) {
 		JobHolder jh = jobList.get(jobId);
 		if(jh != null){
-			if(jh.getJobStatus() != 3){
+			if((jh.getJobStatus() != ERROR_JOB_STATUS) && (!jh.isJobComplete())){
 				Log.i(TAG, "Job ["+jobId+"] was reported failed. Setting failed");
-				jh.setJobStatus(3);
+				jh.setJobStatus(ERROR_JOB_STATUS);
 				return true;
 			}else{
 				Log.w(TAG, "Job ["+ jobId +"] has already failed");
@@ -302,5 +350,43 @@ public class JobCoordinator {
 		}
 		Log.w("TAG", "Failed to get jobHandler for job Id ["+jobId+"]");
 		return false;
+	}
+
+	public void cancelJobs(CommandHolder ch) {
+		for(JobHolder job : jobList){
+			CommandHolder c = job.getCommandHolder();
+			if(ch.equals(c)){
+				if(c.getAssociatedJobCount() > 0){
+					for (int jobId : c.getAssoicatedJobList()){
+						if(failJob(jobId)){
+							cancelJob(jobId);
+						}
+					}
+					deviceCoordinator.updateControl();
+				}
+			}
+		}
+	}
+	
+	public void cancelJob(final int jobId){
+		getDeviceCoodinatorInstance();
+		Log.i(TAG, "Cancel job requested for Job ["+jobId+"]");
+		Thread cancelJobThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				JobHolder jh = jobList.get(jobId);
+				if(jh != null){
+					try{
+						DeviceHolder dh = deviceCoordinator.getDeviceHolder(getJobHolder(jobId).getDeviceId());
+						JSONObject jObject = new JSONObject("{deviceName: "+dh.getDeviceName()+", deviceType: "+dh.getDeviceType().toString()+", jobId: "+jobId+"}");
+						
+						mPusher.sendEvent("client-cancel_job", jObject, registeredChannelName);
+					}catch(Exception e){
+						Log.w(TAG, "Error creating JSON Object for failing job");
+					}
+				}
+			}
+		});
+		cancelJobThread.start();
 	}
 }

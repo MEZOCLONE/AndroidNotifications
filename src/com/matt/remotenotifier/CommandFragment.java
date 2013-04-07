@@ -25,7 +25,7 @@ import android.widget.TextView;
 
 
 // Look, I'm all grown up and have extended my own class! :)
-public class OutgoingFragment extends ExpandableListFragment {	
+public class CommandFragment extends ExpandableListFragment {	
 	private static String TAG = "OutgoingFragment";
 	public ExpandListAdapter mAdaptor;
 	private DeviceCoordinator deviceCoordinator;
@@ -163,6 +163,7 @@ public class OutgoingFragment extends ExpandableListFragment {
 		if(type == ExpandableListView.PACKED_POSITION_TYPE_CHILD){
 			menu.setHeaderTitle("Command Options");
 			android.view.MenuItem executeAtTime = menu.add("Run this command at a certain time");
+			android.view.MenuItem cancelAllAssoicatedJobs = menu.add("Cancel all jobs for this command");
 			
 			executeAtTime.setOnMenuItemClickListener(new OnMenuItemClickListener() {
 				@Override
@@ -171,9 +172,24 @@ public class OutgoingFragment extends ExpandableListFragment {
 					return true;
 				}
 			});
+			
+			cancelAllAssoicatedJobs.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+				
+				@Override
+				public boolean onMenuItemClick(MenuItem item) {
+					cancelAllAssoicatedJobs(group, child, item);
+					return true;
+				}
+			});
 		}
 	}
 	
+	private void cancelAllAssoicatedJobs(int group, int child, MenuItem item) {
+		Log.i(TAG, "User requested all jobs cancel for CommandHolder ["+deviceCoordinator.getDeviceHolder(group).getCommandHolder(child).getName()+"] on " +
+				"device ["+deviceCoordinator.getDeviceHolder(group).getDeviceName()+"]");
+		jobCoordinator.cancelJobs(deviceCoordinator.getDeviceHolder(group).getCommandHolder(child));	
+	}
+
 	private void executeAtTimeClick(int group, int child, MenuItem item){
 		DialogFragment dialogTimePickerFragment = new TimePickerFragment();
 		// Create a bundle for the fragment to hold the right stuff. The fragment can use an instance of the jobCoordinator

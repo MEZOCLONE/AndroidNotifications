@@ -1,5 +1,7 @@
 package com.matt.remotenotifier;
 
+import java.util.ArrayList;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -20,7 +22,7 @@ import android.widget.Toast;
 
 public class IncomingFragment extends ListFragment {
 	private static String TAG = "IncomingFragment";
-	protected IncomingNotificationAdaptor mAdaptor;
+	private IncomingNotificationAdaptor mAdaptor;
 	public ProgressBar progressBar;
 	public TextView connectionMessage;
 
@@ -92,5 +94,25 @@ public class IncomingFragment extends ListFragment {
 		}catch(Exception e){
 			Log.e(TAG, "Error hiding progress bar on connect", e);
 		}
+	}
+	
+	public void addItem(String main, String sub, int colourResourseId, int alpha, Long time){
+		mAdaptor.addItem(main, sub, colourResourseId, alpha, time);
+	}
+	
+	public void clearAll(){
+		mAdaptor.clearAll();
+	}
+	
+	public void notifyDataSetChanged(){
+		mAdaptor.notifyDataSetChanged();
+	}
+	
+	public void saveEventList(AppPreferences appPreferences){
+		appPreferences.setEventListStore(mAdaptor.getEventList());
+	}
+	
+	public void restoreEventList(ArrayList<EventHolder> eventList){
+		mAdaptor.restoreEventList(eventList);
 	}
 }

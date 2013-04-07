@@ -1,6 +1,10 @@
 package com.matt.remotenotifier;
 
-class ArgumentHolder{
+import java.io.Serializable;
+
+class ArgumentHolder implements Serializable {
+
+	private static final long serialVersionUID = -4356288395022804837L;
 	private String argType;
 	private String argName;
 	private String argValue;

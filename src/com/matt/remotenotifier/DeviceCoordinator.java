@@ -15,7 +15,7 @@ public class DeviceCoordinator {
 	private static final String TAG = "DeviceCoordinator";
 	private Integer deviceCount;
 	private ArrayList<DeviceHolder> deviceList;
-	private OutgoingFragment outgoingFragment;
+	private CommandFragment commandFragment;
 	private String registeredChannelName;
 	private static DeviceCoordinator instance; 
 	private JSONObject jObject = null;
@@ -27,25 +27,38 @@ public class DeviceCoordinator {
 	
 	static public DeviceCoordinator getInstance() throws NotActiveException{
 		if(instance != null){
+			Log.d(TAG, "DeviceCoordinator already active. Returning instace");
 			return instance;
 		}else{
 			throw new NotActiveException("Device Coordinator not yet active");
 		}
 	}
 	
-	static public DeviceCoordinator getInstance(Pusher pusher, OutgoingFragment outgoingFragment, String registeredChannelName){
+	static public DeviceCoordinator getInstance(Pusher pusher, CommandFragment commandFragment, String registeredChannelName){
 		if(instance != null){
+			Log.d(TAG, "DeviceCoordinator already active. Returning instace");
 			return instance;
 		}else{
-			return instance = new DeviceCoordinator(pusher, outgoingFragment, registeredChannelName);
+			return instance = new DeviceCoordinator(pusher, commandFragment, registeredChannelName);
 		}
 	}
 	
-	protected DeviceCoordinator(Pusher pusher, OutgoingFragment outgoingFragment, String registeredChannelName) {
+	public void shutdown() throws NotActiveException {
+		if(instance != null){
+			Log.d(TAG, "DeviceCoordinator shutting down.");
+			// Should save the job states here, but lets get this bit working first eh?
+			instance = null;			
+		}else{
+			Log.w(TAG, "Shutdown requested but not yet active. This can only be called when not active!");
+			throw new NotActiveException("Job Coordinator not yet active");
+		}
+	}
+	
+	protected DeviceCoordinator(Pusher pusher, CommandFragment outgoingFragment, String registeredChannelName) {
 		deviceCount = 0;
 		deviceList = new ArrayList<DeviceHolder>();
 		this.registeredChannelName = registeredChannelName;
-		this.outgoingFragment = outgoingFragment;
+		this.commandFragment = outgoingFragment;
 		mPusher = pusher;
 		try {
 			jObject = new JSONObject("{requestedDevice: all, senderType: controller}");
@@ -78,8 +91,12 @@ public class DeviceCoordinator {
 		}
 	}
 	
+	protected CommandFragment getOutGoingFragment() {
+		return commandFragment;
+	}
+	
 	public boolean deviceHolderExists(String deviceName, DeviceType deviceType){
-		DeviceHolder device = new DeviceHolder(this, deviceName, deviceType);
+		DeviceHolder device = new DeviceHolder(deviceName, deviceType);
 		return deviceList.contains(device);
 	}
 	
@@ -88,7 +105,7 @@ public class DeviceCoordinator {
 	}
 	
 	public int registerDevice(String deviceName, DeviceType deviceType){
-		DeviceHolder device = new DeviceHolder(this, deviceName, deviceType);
+		DeviceHolder device = new DeviceHolder(deviceName, deviceType);
 		if(!deviceList.contains(device)){
 			Log.i(TAG, "Registering device ["+device.getDeviceName()+"]");
 			deviceList.add(device);
@@ -141,7 +158,7 @@ public class DeviceCoordinator {
 	}
 	
 	public DeviceHolder getDeviceHolder(String deviceName, DeviceType deviceType){
-		DeviceHolder dhNew = new DeviceHolder(this, deviceName, deviceType);
+		DeviceHolder dhNew = new DeviceHolder(deviceName, deviceType);
 		if(getDeviceCount() > 0){
 			for(DeviceHolder dh : deviceList) {
 				if(dh.equals(dhNew)){
@@ -155,7 +172,7 @@ public class DeviceCoordinator {
 	}
 	
 	public DeviceHolder getNewDeviceHolder(String deviceName, DeviceType deviceType){
-		return new DeviceHolder(this, deviceName, deviceType);
+		return new DeviceHolder(deviceName, deviceType);
 	}
 	
 	public void deregisterDevice(DeviceHolder device){
@@ -174,10 +191,10 @@ public class DeviceCoordinator {
 	
 	public void updateControl(){
 		Log.d(TAG, "Refreshing control list");
-		outgoingFragment.getActivity().runOnUiThread(new Runnable() {	
+		commandFragment.getActivity().runOnUiThread(new Runnable() {	
 			@Override
 			public void run() {
-				outgoingFragment.mAdaptor.notifyDataSetChanged();				
+				commandFragment.mAdaptor.notifyDataSetChanged();				
 			}
 		});
 	}
@@ -222,6 +239,9 @@ public class DeviceCoordinator {
 					}
 					while (true) {
 						if (getDeviceCount() > 0) {
+							if(!mPusher.isConnected()){
+								PusherConnectionsThread.prepare(mPusher, registeredChannelName, null, 0);
+							}
 							Log.i(TAG + " HeartbeatThread", "Requesting heatbeats");
 							mPusher.sendEvent("client-heartbeat_request", jObject, registeredChannelName);
 							synchronized (this) {
@@ -263,6 +283,9 @@ public class DeviceCoordinator {
 						wait(2000);
 					}
 					while(true){
+						if(!mPusher.isConnected()){
+							PusherConnectionsThread.prepare(mPusher, registeredChannelName, null, 0);
+						}
 						//In the future add in a max number of devices. People could pay to remove this limit.
 						Log.i(TAG+" ManagementThread", "Polling for new devices");
 						mPusher.sendEvent("client-device_poll_new", jObject, registeredChannelName);

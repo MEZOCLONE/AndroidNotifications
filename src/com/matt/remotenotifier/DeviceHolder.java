@@ -11,14 +11,6 @@ import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
 
 class DeviceHolder implements Serializable{
 
-	private static final long serialVersionUID = 4944535428907433023L;
-	private String deviceName;
-	private DeviceType deviceType;
-	private ArrayList<CommandHolder> commandListing;
-	private Long lastHeatbeatTime;
-	private boolean hasHeartbeat = false;
-	private final DeviceCoordinator deviceCoordinator;
-
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -26,7 +18,6 @@ class DeviceHolder implements Serializable{
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + getOuterType().hashCode();
 		result = prime * result
 				+ ((deviceName == null) ? 0 : deviceName.hashCode());
 		result = prime * result
@@ -46,8 +37,6 @@ class DeviceHolder implements Serializable{
 		if (getClass() != obj.getClass())
 			return false;
 		DeviceHolder other = (DeviceHolder) obj;
-		if (!getOuterType().equals(other.getOuterType()))
-			return false;
 		if (deviceName == null) {
 			if (other.deviceName != null)
 				return false;
@@ -58,6 +47,14 @@ class DeviceHolder implements Serializable{
 		return true;
 	}
 
+	private static final long serialVersionUID = 4944535428907433023L;
+	private String deviceName;
+	private DeviceType deviceType;
+	private ArrayList<CommandHolder> commandListing;
+	private Long lastHeatbeatTime;
+	private boolean hasHeartbeat = false;
+
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -66,8 +63,7 @@ class DeviceHolder implements Serializable{
 		return "DeviceHolder [deviceName=" + deviceName + "]";
 	}
 	
-	public DeviceHolder(DeviceCoordinator deviceCoordinator, String deviceName, DeviceType deviceType){
-		this.deviceCoordinator = deviceCoordinator;
+	public DeviceHolder(String deviceName, DeviceType deviceType){
 		this.deviceName = deviceName;
 		this.deviceType = deviceType;
 		lastHeatbeatTime = System.currentTimeMillis();
@@ -80,10 +76,6 @@ class DeviceHolder implements Serializable{
 	
 	public DeviceType getDeviceType(){
 		return deviceType;
-	}
-		
-	private DeviceCoordinator getOuterType() {
-		return this.deviceCoordinator;
 	}
 	
 	protected void addCommand(JSONObject commandList) throws JSONException{
