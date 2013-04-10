@@ -1,4 +1,4 @@
-package com.matt.remotenotifier;
+package com.matt.pusher;
 
 /*	Copyright (C) 2011 Emory Myers
  * 
