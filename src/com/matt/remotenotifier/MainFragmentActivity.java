@@ -8,6 +8,7 @@ import java.util.Vector;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.accounts.NetworkErrorException;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -19,6 +20,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.matt.pusher.Pusher;
+import com.matt.pusher.PusherCallback;
+import com.matt.pusher.PusherChannel;
+import com.matt.pusher.PusherConnectionsThread;
 import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
 
 public class MainFragmentActivity extends FragmentActivity {
@@ -65,11 +70,17 @@ public class MainFragmentActivity extends FragmentActivity {
 		
 		// Create a new connection to Pusher.
 		mPusher = new Pusher(appPrefs.getKey(), appPrefs.getSecret());
-		PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, incomingFragment, 0);
+		
+		incomingFragment.showConnectionMessages();
+		try {
+			PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, this, 0);
+		} catch (NetworkErrorException e) {
+			Log.w(TAG, "Can't connect to Pusher", e);
+		}
 			
 		//Once the connection to Pusher has been established, initialise the device coordinator
 		deviceCoordinator = DeviceCoordinator.getInstance(mPusher, commandFragment, PRIVATE_CHANNEL);
-		jobCoordinator = JobCoordinator.getInstance(mPusher, PRIVATE_CHANNEL);
+		jobCoordinator = JobCoordinator.getInstance(mPusher, PRIVATE_CHANNEL, this.getApplicationContext());
 		
 		try {
 			jobCoordinator.restoreJobHolderList(appPrefs.getJobStore());
@@ -315,12 +326,12 @@ public class MainFragmentActivity extends FragmentActivity {
 			try {
 				if (!mPusher.isConnected()) {
 					// Connect to the Pusher server in a separate thread
-					PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, incomingFragment, 0);
+					PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, this.getApplicationContext(), 0);
 					Toast.makeText(getApplicationContext(),"Reconnecting to Pusher Services",Toast.LENGTH_SHORT).show();
 					return true;
 				}else{
-					PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, incomingFragment, 1);
-					PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, incomingFragment, 0);
+					PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, this.getApplicationContext(), 1);
+					PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, this.getApplicationContext(), 0);
 					Toast.makeText(getApplicationContext(),"Reconnecting to Pusher Services",Toast.LENGTH_SHORT).show();
 				}
 				return true;
@@ -387,11 +398,13 @@ public class MainFragmentActivity extends FragmentActivity {
 			incomingFragment.saveEventList(appPrefs);
 			jobCoordinator.shutdown(appPrefs);
 			deviceCoordinator.shutdown();
+			
+			PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, this.getApplicationContext(), 1);
 		}catch(NotActiveException e){
 			Log.e(TAG, "Error on coordinator shutdown()", e);
-		}
-		
-		PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, null, 1);
+		} catch (NetworkErrorException e) {
+			Log.w(TAG, "Can't connect to Pusher", e);
+		}		
 		Log.i(TAG, "RemoteNotifier Destroyed");
 	}
 }

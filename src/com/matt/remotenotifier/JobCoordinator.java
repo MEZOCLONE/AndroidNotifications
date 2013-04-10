@@ -11,9 +11,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.accounts.NetworkErrorException;
+import android.content.Context;
 import android.net.ParseException;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.matt.pusher.Pusher;
+import com.matt.pusher.PusherConnectionsThread;
 import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
 
 /*
@@ -27,13 +32,14 @@ public class JobCoordinator {
 	private Pusher mPusher;
 	private ArrayList<JobHolder> jobList;
 	private int jobCount;
+	private Context ctx;
 	
 	public static int UNKNOWN_JOB_STATUS = 0;
 	public static int SCHEDULED_JOB_STATUS = 1;
 	public static int COMPLETE_JOB_STATUS = 2;
 	public static int ERROR_JOB_STATUS = 3;
 	
-	protected JobCoordinator(Pusher pusher, String registeredChannelName) {
+	protected JobCoordinator(Pusher pusher, String registeredChannelName, Context ctx) {
 		jobCount = 0;
 		mPusher = pusher;
 		jobList = new ArrayList<JobHolder>();
@@ -51,12 +57,12 @@ public class JobCoordinator {
 		}
 	}
 	
-	static public JobCoordinator getInstance(Pusher pusher, String registeredChannelName){
+	static public JobCoordinator getInstance(Pusher pusher, String registeredChannelName, Context ctx){
 		if(instance != null){
 			Log.d(TAG, "JobCoordinator already active. Returning instace");
 			return instance;
 		}else{
-			return instance = new JobCoordinator(pusher, registeredChannelName);
+			return instance = new JobCoordinator(pusher, registeredChannelName, ctx);
 		}
 	}
 	
@@ -227,7 +233,7 @@ public class JobCoordinator {
 	 */
 	public void executeJob(final int jobId){
 		getDeviceCoodinatorInstance();
-		Thread executeJobThread = new Thread(new Runnable() {
+		final Thread executeJobThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				JobHolder jh = jobList.get(jobId);
@@ -249,23 +255,29 @@ public class JobCoordinator {
 							jObject.put("args", argArray);
 						}
 						
-						if(!jh.getRunDateTime().isEmpty()){
-							jObject.put("dateTime", jh.getRunDateTime());
-							mPusher.sendEvent("client-execute_timed_job", jObject, registeredChannelName);
-						}else{
-							mPusher.sendEvent("client-execute_job", jObject, registeredChannelName);
-						}
-						
-						synchronized(this){
-							wait(60000);
-						}
-						
-						if(!jh.isJobRecieved()){
-							Log.w(TAG, "Job ["+jobId+"] on device ["+dh.getDeviceName()+"] took too long to respond with Ack. Failing Job");
-							jh.setJobStatus(ERROR_JOB_STATUS);
-							//Toast toast = Toast.makeText(mainActivityContext, "Error with job ["+jh.getJobName()+"]", Toast.LENGTH_SHORT);
-						}else{
-							jh.setJobStatus(SCHEDULED_JOB_STATUS);
+						try {
+							PusherConnectionsThread.prepare(mPusher, registeredChannelName, ctx, 0);
+							
+							if(!jh.getRunDateTime().isEmpty()){
+								jObject.put("dateTime", jh.getRunDateTime());
+								mPusher.sendEvent("client-execute_timed_job", jObject, registeredChannelName);
+							}else{
+								mPusher.sendEvent("client-execute_job", jObject, registeredChannelName);
+							}
+							
+							synchronized(this){
+								wait(60000);
+							}
+												
+							if(!jh.isJobRecieved()){
+								Log.w(TAG, "Job ["+jobId+"] on device ["+dh.getDeviceName()+"] took too long to respond with Ack. Failing Job");
+								jh.setJobStatus(ERROR_JOB_STATUS);
+								Toast.makeText(ctx, "Error with job ["+jh.getJobName()+"]", Toast.LENGTH_SHORT).show();
+							}else{
+								jh.setJobStatus(SCHEDULED_JOB_STATUS);
+							}
+						} catch (NetworkErrorException e) {
+							Log.w(TAG, "Error on executeJobThread: Error connecting to Pusher", e);
 						}
 					} catch (JSONException e) {
 						Log.e(TAG, e.getMessage());

@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.matt.pusher.Pusher;
+import com.matt.pusher.PusherConnectionsThread;
+
 import android.util.Log;
 
 /*
@@ -239,9 +242,7 @@ public class DeviceCoordinator {
 					}
 					while (true) {
 						if (getDeviceCount() > 0) {
-							if(!mPusher.isConnected()){
-								PusherConnectionsThread.prepare(mPusher, registeredChannelName, null, 0);
-							}
+							PusherConnectionsThread.prepare(mPusher, registeredChannelName, commandFragment.getActivity(), 0);
 							Log.i(TAG + " HeartbeatThread", "Requesting heatbeats");
 							mPusher.sendEvent("client-heartbeat_request", jObject, registeredChannelName);
 							synchronized (this) {
@@ -283,9 +284,7 @@ public class DeviceCoordinator {
 						wait(2000);
 					}
 					while(true){
-						if(!mPusher.isConnected()){
-							PusherConnectionsThread.prepare(mPusher, registeredChannelName, null, 0);
-						}
+						PusherConnectionsThread.prepare(mPusher, registeredChannelName, commandFragment.getActivity(), 0);
 						//In the future add in a max number of devices. People could pay to remove this limit.
 						Log.i(TAG+" ManagementThread", "Polling for new devices");
 						mPusher.sendEvent("client-device_poll_new", jObject, registeredChannelName);
