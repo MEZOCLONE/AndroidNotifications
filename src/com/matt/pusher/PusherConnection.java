@@ -74,6 +74,7 @@ class PusherConnection {
 
 				public void onClose() {
 					Log.d(LOG_TAG, "Successfully closed Websocket");
+					disconnect();
 				}
 			});
 			mWebSocket.connect();

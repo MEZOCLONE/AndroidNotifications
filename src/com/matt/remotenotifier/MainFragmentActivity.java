@@ -10,6 +10,8 @@ import org.json.JSONObject;
 
 import android.accounts.NetworkErrorException;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -23,7 +25,8 @@ import android.widget.Toast;
 import com.matt.pusher.Pusher;
 import com.matt.pusher.PusherCallback;
 import com.matt.pusher.PusherChannel;
-import com.matt.pusher.PusherConnectionsThread;
+import com.matt.pusher.PusherConnectionManager;
+import com.matt.pusher.PusherNetworkManager;
 import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
 
 public class MainFragmentActivity extends FragmentActivity {
@@ -34,6 +37,7 @@ public class MainFragmentActivity extends FragmentActivity {
 	private CommandFragment commandFragment;
 	private DeviceCoordinator deviceCoordinator;
 	private JobCoordinator jobCoordinator;
+	private PusherNetworkManager receiver;
 	//private static final String PUBLIC_CHANNEL = "matt_sandbox";
 	private static final String PRIVATE_CHANNEL = "private-matt_sandbox";
 
@@ -48,7 +52,7 @@ public class MainFragmentActivity extends FragmentActivity {
 		List<Fragment> fragments = new Vector<Fragment>();
 		fragments.add(Fragment.instantiate(this, IncomingFragment.class.getName()));
 		fragments.add(Fragment.instantiate(this, CommandFragment.class.getName()));
-		this.pagerAdapter = new PagerAdapterManager(super.getSupportFragmentManager(), fragments);
+		pagerAdapter = PagerAdapterManager.getInstance(super.getSupportFragmentManager(), fragments);
 
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(pagerAdapter);
@@ -57,6 +61,11 @@ public class MainFragmentActivity extends FragmentActivity {
 		commandFragment = (CommandFragment) pagerAdapter.getItem(1);
 		
 		appPrefs = new AppPreferences(getApplicationContext());
+		
+		Log.d(TAG, "Registering PusherNetworkReceiver intent");
+		IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        receiver = new PusherNetworkManager();
+        this.registerReceiver(receiver, filter);
 		
 		// TODO: Check for empty string
 		if (appPrefs.getKey() == null || appPrefs.getSecret() == null) {
@@ -70,21 +79,9 @@ public class MainFragmentActivity extends FragmentActivity {
 		
 		// Create a new connection to Pusher.
 		mPusher = new Pusher(appPrefs.getKey(), appPrefs.getSecret());
-		
-		incomingFragment.showConnectionMessages();
-		try {
-			PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, this, 0);
-		} catch (NetworkErrorException e) {
-			Log.w(TAG, "Can't connect to Pusher", e);
-		}
-			
-		//Once the connection to Pusher has been established, initialise the device coordinator
-		deviceCoordinator = DeviceCoordinator.getInstance(mPusher, commandFragment, PRIVATE_CHANNEL);
-		jobCoordinator = JobCoordinator.getInstance(mPusher, PRIVATE_CHANNEL, this.getApplicationContext());
-		
+				
 		try {
 			jobCoordinator.restoreJobHolderList(appPrefs.getJobStore());
-			incomingFragment.restoreEventList(appPrefs.getEventListStore());
 		} catch (NotActiveException e) {
 			Log.w(TAG, "Error on JobStore restore", e);
 		} catch (Exception e) {
@@ -112,13 +109,52 @@ public class MainFragmentActivity extends FragmentActivity {
 		}else{
 			Log.i(TAG, "Saved Instance State was Null");
 		}
-
+		
+		// Make a call to update the list so the times are displayed correctly
+		Thread updateIncomingList = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (true) {
+					try {
+						synchronized (this) {
+							wait(60000);
+						}
+					} catch (InterruptedException e) {
+						Log.d(TAG, e.getMessage());
+					}
+					runOnUiThread(new Runnable() {
+						public void run() {
+							incomingFragment.notifyDataSetChanged();
+						}
+					});
+				}
+			}
+		});
+		updateIncomingList.start();
+	}
+	
+	@Override
+	public void onStart(){
+		super.onStart();
+		try {
+			//incomingFragment.showConnectionMessages();
+			PusherConnectionManager.prepare(mPusher, PRIVATE_CHANNEL, this, 0);
+			
+			//Once the connection to Pusher has been established, initialise the device coordinator
+			deviceCoordinator = DeviceCoordinator.getInstance(mPusher, PRIVATE_CHANNEL, this);
+			jobCoordinator = JobCoordinator.getInstance(mPusher, PRIVATE_CHANNEL, this);
+			
+			deviceCoordinator.startDeviceManagentThread();
+		} catch (Exception e) {
+			Log.w(TAG, "DeviceManagementTask Error", e);
+		}
+		
 		// bindAll here so that we receive notifications form the global channel
 		mPusher.bindAll(new PusherCallback() {
 			@Override
 			public void onEvent(String eventName, JSONObject eventData, String channelName) {
 				Long now = System.currentTimeMillis();
-				Log.d(TAG, "Received " + eventData.toString() + " for event '"+ eventName + "' on channel '" + channelName + "'.");
+				//Log.d(TAG, "Received " + eventData.toString() + " for event '"+ eventName + "' on channel '" + channelName + "'.");
 				
 				if (eventName.equalsIgnoreCase("connection_established")) {
 						incomingFragment.hideConnectionMessages();
@@ -132,7 +168,7 @@ public class MainFragmentActivity extends FragmentActivity {
 				}
 			}
 		});
-
+	
 		// Subscribe to our channel and bind to all events on it. We will filter the events ourself.
 		PusherChannel mChannel = mPusher.subscribe(PRIVATE_CHANNEL);
 		mChannel.bindAll(new PusherCallback() {
@@ -253,28 +289,6 @@ public class MainFragmentActivity extends FragmentActivity {
 				}
 			}
 		});
-		
-		// Make a call to update the list so the times are displayed correctly
-		Thread updateIncomingList = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				while (true) {
-					try {
-						synchronized (this) {
-							wait(60000);
-						}
-					} catch (InterruptedException e) {
-						Log.d(TAG, e.getMessage());
-					}
-					runOnUiThread(new Runnable() {
-						public void run() {
-							incomingFragment.notifyDataSetChanged();
-						}
-					});
-				}
-			}
-		});
-		updateIncomingList.start();
 	}
 	
 	@Override
@@ -326,12 +340,12 @@ public class MainFragmentActivity extends FragmentActivity {
 			try {
 				if (!mPusher.isConnected()) {
 					// Connect to the Pusher server in a separate thread
-					PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, this.getApplicationContext(), 0);
+					PusherConnectionManager.prepare(mPusher, PRIVATE_CHANNEL, this.getApplicationContext(), 0);
 					Toast.makeText(getApplicationContext(),"Reconnecting to Pusher Services",Toast.LENGTH_SHORT).show();
 					return true;
 				}else{
-					PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, this.getApplicationContext(), 1);
-					PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, this.getApplicationContext(), 0);
+					PusherConnectionManager.prepare(mPusher, PRIVATE_CHANNEL, this.getApplicationContext(), 1);
+					PusherConnectionManager.prepare(mPusher, PRIVATE_CHANNEL, this.getApplicationContext(), 0);
 					Toast.makeText(getApplicationContext(),"Reconnecting to Pusher Services",Toast.LENGTH_SHORT).show();
 				}
 				return true;
@@ -395,11 +409,14 @@ public class MainFragmentActivity extends FragmentActivity {
 	public void onDestroy() {
 		super.onDestroy();
 		try{
-			incomingFragment.saveEventList(appPrefs);
+			if(receiver != null){
+				Log.d(TAG, "Unregistering Network Broadcast Reveiver");
+				this.unregisterReceiver(receiver);
+			}
 			jobCoordinator.shutdown(appPrefs);
 			deviceCoordinator.shutdown();
 			
-			PusherConnectionsThread.prepare(mPusher, PRIVATE_CHANNEL, this.getApplicationContext(), 1);
+			PusherConnectionManager.prepare(mPusher, PRIVATE_CHANNEL, this, 1);
 		}catch(NotActiveException e){
 			Log.e(TAG, "Error on coordinator shutdown()", e);
 		} catch (NetworkErrorException e) {

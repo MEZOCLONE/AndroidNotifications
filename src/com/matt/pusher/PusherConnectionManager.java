@@ -2,15 +2,12 @@ package com.matt.pusher;
 
 import android.accounts.NetworkErrorException;
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.util.Log;
 
-public class PusherConnectionsThread implements Runnable{
+public class PusherConnectionManager implements Runnable{
 	
 	private static Pusher mPusher;
 	private static String pusherChannel;
-	private static Context ctx;
 	private static String TAG = "PusherConnectionThread";
 	private static int runMode;
 	
@@ -25,11 +22,10 @@ public class PusherConnectionsThread implements Runnable{
 		mPusher = pusher;
 		pusherChannel = channel;
 		runMode = rm;
-		ctx = context;
 		
 		Log.d(TAG, "PusherConnectionThread Called. Using runMode ["+rm+"]");
-		if(isOnline()){
-			(new Thread(new PusherConnectionsThread())).start();
+		if(PusherNetworkManager.isOnline(context)){
+			(new Thread(new PusherConnectionManager())).start();
 		}else{
 			throw new NetworkErrorException("No active network to perform this action");
 		}
@@ -37,34 +33,31 @@ public class PusherConnectionsThread implements Runnable{
 		//TODO: After we get network back, we should restart the connection to Pusher and the threads for device management... 
 	}
 	
-	private static boolean isOnline(){
-		ConnectivityManager connMgr = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-		return (networkInfo != null && networkInfo.isConnected());	
-	}
-	
-	public static boolean isOnline(Context context){
-		ctx = context;
-		return isOnline();
-	}
-
 	@Override
 	public void run() {
 		switch(runMode){
 		case 0:
-			if(!mPusher.isConnected()){
+			if((!mPusher.isConnected()) && (!mPusher.isConnecting())){
 				mPusher.connect();
-			}else{
-				Log.w(TAG, "Pusher already connected!");
 			}
 			break;
+			
 		case 1:
 			mPusher.unbindAll();
 			mPusher.unsubscribe(pusherChannel);
 			mPusher.disconnect();
 			break;
+		
+		// Force reconnect
+		case 2:
+			mPusher.unsubscribe(pusherChannel);
+			mPusher.disconnect();
+			mPusher.connect();
+			mPusher.subscribe(pusherChannel);
+			break;
+			
 		default: 
-			Log.e(TAG, "Unknown runMode requested");
+			Log.e(TAG, "Unknown runMode requested ["+runMode+"]");
 			break;
 		}
 

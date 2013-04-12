@@ -50,6 +50,8 @@ public class Pusher implements PusherEventEmitter {
 
 	private static final int WS_PORT = 80;
 	private static final int WSS_PORT = 443;
+	
+	private boolean isConnecting = false;
 
 	private String mPusherKey;
 	private String mPusherSecret;
@@ -84,7 +86,13 @@ public class Pusher implements PusherEventEmitter {
 	}
 
 	public void connect() {
+		isConnecting = true;
 		mConnection.connect();
+		isConnecting = false;
+	}
+	
+	public boolean isConnecting(){
+		return isConnecting;
 	}
 
 	public boolean isConnected() {

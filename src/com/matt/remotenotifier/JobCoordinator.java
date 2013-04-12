@@ -18,7 +18,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.matt.pusher.Pusher;
-import com.matt.pusher.PusherConnectionsThread;
+import com.matt.pusher.PusherConnectionManager;
 import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
 
 /*
@@ -256,7 +256,7 @@ public class JobCoordinator {
 						}
 						
 						try {
-							PusherConnectionsThread.prepare(mPusher, registeredChannelName, ctx, 0);
+							PusherConnectionManager.prepare(mPusher, registeredChannelName, ctx, 0);
 							
 							if(!jh.getRunDateTime().isEmpty()){
 								jObject.put("dateTime", jh.getRunDateTime());

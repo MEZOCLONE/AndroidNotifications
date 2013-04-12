@@ -7,8 +7,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.matt.pusher.Pusher;
-import com.matt.pusher.PusherConnectionsThread;
+import com.matt.pusher.PusherConnectionManager;
 
+import android.app.Activity;
+import android.content.Context;
+import android.os.AsyncTask;
 import android.util.Log;
 
 /*
@@ -16,13 +19,14 @@ import android.util.Log;
  */
 public class DeviceCoordinator {
 	private static final String TAG = "DeviceCoordinator";
+	private static DeviceCoordinator instance; 
+	private Pusher mPusher;
 	private Integer deviceCount;
 	private ArrayList<DeviceHolder> deviceList;
-	private CommandFragment commandFragment;
 	private String registeredChannelName;
-	private static DeviceCoordinator instance; 
+	private Context ctx;
 	private JSONObject jObject = null;
-	private Pusher mPusher;
+	private DeviceManagementTask dmt;
 	
 	public enum DeviceType{
 		ARDUINO, RASPBERRYPI, CONTROLLER;
@@ -37,31 +41,20 @@ public class DeviceCoordinator {
 		}
 	}
 	
-	static public DeviceCoordinator getInstance(Pusher pusher, CommandFragment commandFragment, String registeredChannelName){
+	static public DeviceCoordinator getInstance(Pusher pusher, String registeredChannelName, Context ctx){
 		if(instance != null){
 			Log.d(TAG, "DeviceCoordinator already active. Returning instace");
 			return instance;
 		}else{
-			return instance = new DeviceCoordinator(pusher, commandFragment, registeredChannelName);
+			return instance = new DeviceCoordinator(pusher, registeredChannelName, ctx);
 		}
 	}
 	
-	public void shutdown() throws NotActiveException {
-		if(instance != null){
-			Log.d(TAG, "DeviceCoordinator shutting down.");
-			// Should save the job states here, but lets get this bit working first eh?
-			instance = null;			
-		}else{
-			Log.w(TAG, "Shutdown requested but not yet active. This can only be called when not active!");
-			throw new NotActiveException("Job Coordinator not yet active");
-		}
-	}
-	
-	protected DeviceCoordinator(Pusher pusher, CommandFragment outgoingFragment, String registeredChannelName) {
+	protected DeviceCoordinator(Pusher pusher, String registeredChannelName, Context ctx) {
 		deviceCount = 0;
 		deviceList = new ArrayList<DeviceHolder>();
 		this.registeredChannelName = registeredChannelName;
-		this.commandFragment = outgoingFragment;
+		this.ctx = ctx;
 		mPusher = pusher;
 		try {
 			jObject = new JSONObject("{requestedDevice: all, senderType: controller}");
@@ -71,8 +64,19 @@ public class DeviceCoordinator {
 		}
 
 		// Start the management threads. One looks after all heatbeats to the devices, the other is handle polling devices
-		deviceManagementThread(pusher, registeredChannelName);
-		deviceHeatbeatThread(pusher, registeredChannelName);
+		deviceHeatbeatThread(mPusher, registeredChannelName);
+	}
+	
+	public void shutdown() throws NotActiveException {
+		if(instance != null){
+			Log.d(TAG, "DeviceCoordinator shutting down.");
+			// Should save the job states here, but lets get this bit working first eh?
+			dmt.cancel(true);
+			instance = null;			
+		}else{
+			Log.w(TAG, "Shutdown requested but not yet active. This can only be called when not active!");
+			throw new NotActiveException("Job Coordinator not yet active");
+		}
 	}
 	
 	public ArrayList<DeviceHolder> getDeviceHolderList() throws NotActiveException{
@@ -94,9 +98,9 @@ public class DeviceCoordinator {
 		}
 	}
 	
-	protected CommandFragment getOutGoingFragment() {
-		return commandFragment;
-	}
+//	protected CommandFragment getOutGoingFragment() {
+//		return commandFragment;
+//	}
 	
 	public boolean deviceHolderExists(String deviceName, DeviceType deviceType){
 		DeviceHolder device = new DeviceHolder(deviceName, deviceType);
@@ -194,10 +198,18 @@ public class DeviceCoordinator {
 	
 	public void updateControl(){
 		Log.d(TAG, "Refreshing control list");
-		commandFragment.getActivity().runOnUiThread(new Runnable() {	
+		final Activity act = (Activity) ctx;
+		act.runOnUiThread(new Runnable() {	
 			@Override
 			public void run() {
-				commandFragment.mAdaptor.notifyDataSetChanged();				
+				PagerAdapterManager pam;
+				try {
+					pam = PagerAdapterManager.getInstance();
+					CommandFragment commandFragment = (CommandFragment) pam.getItem(1);
+					commandFragment.mAdaptor.notifyDataSetChanged();
+				} catch (NotActiveException e) {
+					Log.w(TAG, "Error getting PagerAdapterManager");
+				}				
 			}
 		});
 	}
@@ -242,7 +254,7 @@ public class DeviceCoordinator {
 					}
 					while (true) {
 						if (getDeviceCount() > 0) {
-							PusherConnectionsThread.prepare(mPusher, registeredChannelName, commandFragment.getActivity(), 0);
+							//PusherConnectionManager.prepare(mPusher, registeredChannelName, ctx, 0);
 							Log.i(TAG + " HeartbeatThread", "Requesting heatbeats");
 							mPusher.sendEvent("client-heartbeat_request", jObject, registeredChannelName);
 							synchronized (this) {
@@ -273,32 +285,37 @@ public class DeviceCoordinator {
 	}
 	
 	private void deviceManagementThread(final Pusher mPusher, final String registeredChannelName){
-		Thread deviceManagementThread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				Log.d(TAG+" ManagementThread", "Starting device management thread");
-				//TODO: Instead of true, use a boolean from prefs
-				try {
-					// Wait before starting the main loop
-					synchronized (this) {
-						wait(2000);
-					}
-					while(true){
-						PusherConnectionsThread.prepare(mPusher, registeredChannelName, commandFragment.getActivity(), 0);
-						//In the future add in a max number of devices. People could pay to remove this limit.
-						Log.i(TAG+" ManagementThread", "Polling for new devices");
-						mPusher.sendEvent("client-device_poll_new", jObject, registeredChannelName);
-						
-						synchronized (this) {
-							wait(300000);
-						}
-					}
-				} catch (Exception e) {
-					Log.e(TAG+" ManagementThread", "Error occoured on DeviceManagement thread", e);
-				}
-			}
-		});
-		deviceManagementThread.start();
+		dmt = new DeviceManagementTask(mPusher, registeredChannelName, ctx);
+		dmt.execute();
+	}
+	
+	public void startDeviceManagentThread() throws Exception{
+		if(instance == null){
+			throw new NotActiveException("DeviceCoordinator not yet active");
+		}
+		
+		if(dmt == null){
+			deviceManagementThread(mPusher, registeredChannelName);
+		}else{
+			throw new Exception("DeviceManagementTask already running");
+		}
+	}
+	
+	public void stopDeviceManagementThread() throws Exception {
+		if(instance == null){
+			throw new NotActiveException("DeviceCoordinator not yet active");
+		}
+		if(dmt != null){
+			dmt.cancel(true);
+			dmt = null;
+		}else{
+			throw new Exception("DeviceManagementTask not started");
+		}
+	}
+	
+	public void restartDeviceManagementThread() throws Exception {
+		stopDeviceManagementThread();
+		startDeviceManagentThread();
 	}
 
 }
