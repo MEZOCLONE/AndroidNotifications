@@ -12,6 +12,7 @@ branches:
   only: 
     - master
     - Wip
+    - WipNewPusher
 before_install:
     # Install base Android SDK
     - sudo apt-get update -qq
