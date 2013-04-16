@@ -17,9 +17,8 @@ import android.net.ParseException;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.matt.pusher.Pusher;
+import com.matt.pusher.ChannelEventCoordinator;
 import com.matt.pusher.PusherConnectionManager;
-import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
 
 /*
  * Singleton instance - Use getInstance
@@ -29,7 +28,7 @@ public class JobCoordinator {
 	private String registeredChannelName;
 	private static JobCoordinator instance;
 	private DeviceCoordinator deviceCoordinator;
-	private Pusher mPusher;
+	private ChannelEventCoordinator cem;
 	private ArrayList<JobHolder> jobList;
 	private int jobCount;
 	private Context ctx;
@@ -39,11 +38,11 @@ public class JobCoordinator {
 	public static int COMPLETE_JOB_STATUS = 2;
 	public static int ERROR_JOB_STATUS = 3;
 	
-	protected JobCoordinator(Pusher pusher, String registeredChannelName, Context ctx) {
+	protected JobCoordinator(Context ctx) {
 		jobCount = 0;
-		mPusher = pusher;
 		jobList = new ArrayList<JobHolder>();
-		this.registeredChannelName = registeredChannelName;
+		
+		getChannelEventManagerInstance();
 		getDeviceCoodinatorInstance();
 		Log.d(TAG, "Job Coodinator Started Okay");
 	}
@@ -57,12 +56,12 @@ public class JobCoordinator {
 		}
 	}
 	
-	static public JobCoordinator getInstance(Pusher pusher, String registeredChannelName, Context ctx){
+	static public JobCoordinator getInstance(Context ctx){
 		if(instance != null){
 			Log.d(TAG, "JobCoordinator already active. Returning instace");
 			return instance;
 		}else{
-			return instance = new JobCoordinator(pusher, registeredChannelName, ctx);
+			return instance = new JobCoordinator(ctx);
 		}
 	}
 	
@@ -111,6 +110,18 @@ public class JobCoordinator {
 			}
 		}else{
 			Log.d(TAG, "Device Coodinator is already assigned");
+		}
+	}
+	
+	private void getChannelEventManagerInstance(){
+		if(cem == null){
+			try {
+				cem = ChannelEventCoordinator.getInstance();
+			} catch (NotActiveException e) {
+				Log.w(TAG, e.getMessage());
+			}
+		}else{
+			Log.d(TAG, "ChannelEventManager is already assigned");
 		}
 	}
 	
@@ -255,29 +266,23 @@ public class JobCoordinator {
 							jObject.put("args", argArray);
 						}
 						
-						try {
-							PusherConnectionManager.prepare(mPusher, registeredChannelName, ctx, 0);
-							
-							if(!jh.getRunDateTime().isEmpty()){
-								jObject.put("dateTime", jh.getRunDateTime());
-								mPusher.sendEvent("client-execute_timed_job", jObject, registeredChannelName);
-							}else{
-								mPusher.sendEvent("client-execute_job", jObject, registeredChannelName);
-							}
-							
-							synchronized(this){
-								wait(60000);
-							}
-												
-							if(!jh.isJobRecieved()){
-								Log.w(TAG, "Job ["+jobId+"] on device ["+dh.getDeviceName()+"] took too long to respond with Ack. Failing Job");
-								jh.setJobStatus(ERROR_JOB_STATUS);
-								Toast.makeText(ctx, "Error with job ["+jh.getJobName()+"]", Toast.LENGTH_SHORT).show();
-							}else{
-								jh.setJobStatus(SCHEDULED_JOB_STATUS);
-							}
-						} catch (NetworkErrorException e) {
-							Log.w(TAG, "Error on executeJobThread: Error connecting to Pusher", e);
+						if(!jh.getRunDateTime().isEmpty()){
+							jObject.put("dateTime", jh.getRunDateTime());
+							cem.trigger(0, "client-execute_timed_job", jObject.toString());
+						}else{
+							cem.trigger(0, "client-execute_job", jObject.toString());
+						}
+						
+						synchronized(this){
+							wait(60000);
+						}
+											
+						if(!jh.isJobRecieved()){
+							Log.w(TAG, "Job ["+jobId+"] on device ["+dh.getDeviceName()+"] took too long to respond with Ack. Failing Job");
+							jh.setJobStatus(ERROR_JOB_STATUS);
+							Toast.makeText(ctx, "Error with job ["+jh.getJobName()+"]", Toast.LENGTH_SHORT).show();
+						}else{
+							jh.setJobStatus(SCHEDULED_JOB_STATUS);
 						}
 					} catch (JSONException e) {
 						Log.e(TAG, e.getMessage());
@@ -392,7 +397,7 @@ public class JobCoordinator {
 						DeviceHolder dh = deviceCoordinator.getDeviceHolder(getJobHolder(jobId).getDeviceId());
 						JSONObject jObject = new JSONObject("{deviceName: "+dh.getDeviceName()+", deviceType: "+dh.getDeviceType().toString()+", jobId: "+jobId+"}");
 						
-						mPusher.sendEvent("client-cancel_job", jObject, registeredChannelName);
+						cem.trigger(0, "client-cancel_job", jObject.toString());
 					}catch(Exception e){
 						Log.w(TAG, "Error creating JSON Object for failing job");
 					}

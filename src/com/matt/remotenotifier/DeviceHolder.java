@@ -7,9 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.matt.remotenotifier.DeviceCoordinator.DeviceType;
 
-class DeviceHolder implements Serializable{
+public class DeviceHolder implements Serializable{
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()

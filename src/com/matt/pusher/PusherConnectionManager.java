@@ -1,59 +1,43 @@
 package com.matt.pusher;
 
+import com.matt.remotenotifier.NetworkManager;
+import com.pusher.client.Pusher;
+import com.pusher.client.connection.ConnectionState;
+
 import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.util.Log;
 
 public class PusherConnectionManager implements Runnable{
-	
+	private static String TAG = "PusherConnectionManager";
+	private static Context ctx;
 	private static Pusher mPusher;
-	private static String pusherChannel;
-	private static String TAG = "PusherConnectionThread";
 	private static int runMode;
 	
-	/**
-	 * @param pusher
-	 * @param channel
-	 * @param context
-	 * @param runMode
-	 * @throws NetworkErrorException
-	 */
-	public static void prepare(Pusher pusher, String channel, Context context, int rm) throws NetworkErrorException {
+	public static void prepare(Context context, Pusher pusher, int rm, String TAG) throws NetworkErrorException {
+		ctx = context;
 		mPusher = pusher;
-		pusherChannel = channel;
 		runMode = rm;
 		
-		Log.d(TAG, "PusherConnectionThread Called. Using runMode ["+rm+"]");
-		if(PusherNetworkManager.isOnline(context)){
+		Log.d(TAG, "PusherConnectionThread called from "+TAG+". Using runMode ["+rm+"]");
+		if(NetworkManager.isOnline(context)){
 			(new Thread(new PusherConnectionManager())).start();
 		}else{
 			throw new NetworkErrorException("No active network to perform this action");
 		}
 		
-		//TODO: After we get network back, we should restart the connection to Pusher and the threads for device management... 
 	}
 	
 	@Override
 	public void run() {
 		switch(runMode){
 		case 0:
-			if((!mPusher.isConnected()) && (!mPusher.isConnecting())){
-				mPusher.connect();
-			}
+			// We can call this even if we are connected - calls are ignored unless ConnectionState = DISCONECTED
+			mPusher.connect(new ConnectionEventManager(ctx));
 			break;
 			
 		case 1:
-			mPusher.unbindAll();
-			mPusher.unsubscribe(pusherChannel);
 			mPusher.disconnect();
-			break;
-		
-		// Force reconnect
-		case 2:
-			mPusher.unsubscribe(pusherChannel);
-			mPusher.disconnect();
-			mPusher.connect();
-			mPusher.subscribe(pusherChannel);
 			break;
 			
 		default: 

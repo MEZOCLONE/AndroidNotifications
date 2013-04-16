@@ -1,28 +1,30 @@
 package com.matt.remotenotifier;
 
+import java.io.NotActiveException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.matt.pusher.Pusher;
 
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.matt.pusher.ChannelEventCoordinator;
+
 public class DeviceManagementTask extends AsyncTask<String, Integer, Long> {
 	
 	private static String TAG = "DeviceManagementTask";
-	private Pusher mPusher;
-	private String registeredChannelName;
+	private ChannelEventCoordinator channelEventManager;
 	private JSONObject jObject;
 	
-	public DeviceManagementTask(Pusher mPusher, String registeredChannelName, Context ctx){
-		this.mPusher = mPusher;
-		this.registeredChannelName = registeredChannelName;
+	public DeviceManagementTask(Context ctx){
 		try {
+			channelEventManager = ChannelEventCoordinator.getInstance();
 			jObject = new JSONObject("{requestedDevice: all, senderType: controller}");
 		} catch (JSONException e) {
 			Log.e(TAG, "Error creating jObject", e);
+		} catch (NotActiveException e) {
+			Log.w(TAG, e.getMessage());
 		}
 	}
 
@@ -37,7 +39,7 @@ public class DeviceManagementTask extends AsyncTask<String, Integer, Long> {
 			while(true){
 				//PusherConnectionManager.prepare(mPusher, registeredChannelName, ctx, 0);
 				Log.i(TAG+" ManagementThread", "Polling for new devices");
-				mPusher.sendEvent("client-device_poll_new", jObject, registeredChannelName);
+				channelEventManager.trigger(0, "client-device_poll_new", jObject.toString());
 				
 				synchronized (this) {
 					wait(300000);

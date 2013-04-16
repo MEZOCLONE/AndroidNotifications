@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class IncomingFragment extends ListFragment {
+	
 	private static String TAG = "IncomingFragment";
 	private IncomingNotificationAdaptor mAdaptor;
 	public ProgressBar progressBar;

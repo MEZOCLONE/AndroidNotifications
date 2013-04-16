@@ -2,7 +2,7 @@ package com.matt.remotenotifier;
 
 import java.io.Serializable;
 
-class EventHolder implements Serializable {
+public class EventHolder implements Serializable {
 
 	private static final long serialVersionUID = -102973054041517660L;
 	private String textMain;
