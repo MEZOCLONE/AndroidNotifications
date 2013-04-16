@@ -102,10 +102,9 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 	@Override
 	public void onSubscriptionSucceeded(String channelName) {
 		Long now = System.currentTimeMillis();
-		incomingFragment.hideConnectionMessages();
 		addItemToNotificationView("Remote Notifier Connected", "",R.color.haloLightBlue, 255, now);
 		try {
-			deviceCoordinator.startDeviceManagentThread();
+			deviceCoordinator.startDeviceManagentTask();
 		} catch (Exception e) {
 			Log.w(TAG, e.getMessage());
 		}
@@ -131,6 +130,7 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 			public void run() {
 				incomingFragment.hideConnectionMessages();
 				incomingFragment.addItem(main, sub , colourResourseId, alpha, time);
+				incomingFragment.notifyDataSetChanged();
 			}
 		});
 	}

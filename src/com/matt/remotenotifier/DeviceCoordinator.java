@@ -23,7 +23,7 @@ public class DeviceCoordinator {
 	private Context ctx;
 	private JSONObject jObject = null;
 	private DeviceManagementTask dmt;
-	private ChannelEventCoordinator cem;
+	private ChannelEventCoordinator cec;
 	
 	static public DeviceCoordinator getInstance() throws NotActiveException{
 		if(instance != null){
@@ -49,16 +49,14 @@ public class DeviceCoordinator {
 		this.ctx = ctx;
 		try {
 			jObject = new JSONObject("{requestedDevice: all, senderType: controller}");
-			cem = ChannelEventCoordinator.getInstance();
-			Log.d(TAG, "Device Coodinator Started Okay");
+			getChannelEventCoordinatorInstance();
+			Log.i(TAG, "Device Coodinator Started Okay");
 		} catch (JSONException e) {
 			Log.e(TAG, "Error creating jObject", e);
-		} catch (NotActiveException e) {
-			Log.w(TAG, e.getMessage());
 		}
 
 		// Start the management threads. One looks after all heatbeats to the devices, the other is handle polling devices
-		deviceHeatbeatThread(cem);
+		deviceHeatbeatThread();
 	}
 	
 	public void shutdown() throws NotActiveException {
@@ -73,6 +71,18 @@ public class DeviceCoordinator {
 		}else{
 			Log.w(TAG, "Shutdown requested but not yet active. This can only be called when not active!");
 			throw new NotActiveException("Device Coordinator not yet active");
+		}
+	}
+	
+	private void getChannelEventCoordinatorInstance(){
+		if(cec == null){
+			try {
+				cec = ChannelEventCoordinator.getInstance();
+			} catch (NotActiveException e) {
+				Log.w(TAG, e.getMessage());
+			}
+		}else{
+			Log.d(TAG, "ChannelEventCoordinator is already assigned");
 		}
 	}
 	
@@ -214,7 +224,7 @@ public class DeviceCoordinator {
 				try {
 					JSONObject jObj = new JSONObject("{requestedDevice: "+deviceName+", senderType: controller}");
 					Log.i(TAG, "Requesting heatbeat from "+deviceName);
-					cem.trigger(0, "client-heartbeat_request", jObj.toString());
+					cec.trigger(0, "client-heartbeat_request", jObj.toString());
 				} catch (JSONException e) {
 					Log.w(TAG, "Error requesting heartbeat from device "+deviceName, e);
 				}
@@ -233,7 +243,7 @@ public class DeviceCoordinator {
 		}
 	}
 	
-	private void deviceHeatbeatThread(final ChannelEventCoordinator cme) {
+	private void deviceHeatbeatThread() {
 		Thread deviceHeartbeatThread = new Thread(new Runnable() {
 			final Long HEARTBEAT_TIMEOUT = 180000L;
 			
@@ -248,7 +258,8 @@ public class DeviceCoordinator {
 					while (true) {
 						if (getDeviceCount() > 0) {
 							Log.i(TAG + " HeartbeatThread", "Requesting heatbeats");
-							cme.trigger(0, "client-heartbeat_request", jObject.toString());
+							getChannelEventCoordinatorInstance();
+							cec.trigger(0, "client-heartbeat_request", jObject.toString());
 							synchronized (this) {
 								wait(HEARTBEAT_TIMEOUT);
 							}
@@ -276,24 +287,24 @@ public class DeviceCoordinator {
 		deviceHeartbeatThread.start();
 	}
 	
-	private void deviceManagementThread(){
+	private void deviceManagementTask(){
 		dmt = new DeviceManagementTask(ctx);
 		dmt.execute();
 	}
 	
-	public void startDeviceManagentThread() throws Exception{
+	public void startDeviceManagentTask() throws Exception{
 		if(instance == null){
 			throw new NotActiveException("DeviceCoordinator not yet active");
 		}
 		
-		if(dmt == null){
-			deviceManagementThread();
+		if(dmt != null){
+			deviceManagementTask();
 		}else{
 			throw new Exception("DeviceManagementTask already running");
 		}
 	}
 	
-	public void stopDeviceManagementThread() throws Exception {
+	public void stopDeviceManagementTask() throws Exception {
 		if(instance == null){
 			throw new NotActiveException("DeviceCoordinator not yet active");
 		}

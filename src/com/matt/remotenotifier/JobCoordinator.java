@@ -25,10 +25,9 @@ import com.matt.pusher.PusherConnectionManager;
  */
 public class JobCoordinator {
 	private static String TAG = "JobCoordinator";
-	private String registeredChannelName;
 	private static JobCoordinator instance;
 	private DeviceCoordinator deviceCoordinator;
-	private ChannelEventCoordinator cem;
+	private ChannelEventCoordinator cec;
 	private ArrayList<JobHolder> jobList;
 	private int jobCount;
 	private Context ctx;
@@ -42,9 +41,9 @@ public class JobCoordinator {
 		jobCount = 0;
 		jobList = new ArrayList<JobHolder>();
 		
-		getChannelEventManagerInstance();
+		getChannelEventCoordinatorInstance();
 		getDeviceCoodinatorInstance();
-		Log.d(TAG, "Job Coodinator Started Okay");
+		Log.i(TAG, "Job Coodinator Started Okay");
 	}
 
 	static public JobCoordinator getInstance() throws NotActiveException{
@@ -113,15 +112,15 @@ public class JobCoordinator {
 		}
 	}
 	
-	private void getChannelEventManagerInstance(){
-		if(cem == null){
+	private void getChannelEventCoordinatorInstance(){
+		if(cec == null){
 			try {
-				cem = ChannelEventCoordinator.getInstance();
+				cec = ChannelEventCoordinator.getInstance();
 			} catch (NotActiveException e) {
 				Log.w(TAG, e.getMessage());
 			}
 		}else{
-			Log.d(TAG, "ChannelEventManager is already assigned");
+			Log.d(TAG, "ChannelEventCoordinator is already assigned");
 		}
 	}
 	
@@ -244,6 +243,7 @@ public class JobCoordinator {
 	 */
 	public void executeJob(final int jobId){
 		getDeviceCoodinatorInstance();
+		getChannelEventCoordinatorInstance();
 		final Thread executeJobThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -268,9 +268,9 @@ public class JobCoordinator {
 						
 						if(!jh.getRunDateTime().isEmpty()){
 							jObject.put("dateTime", jh.getRunDateTime());
-							cem.trigger(0, "client-execute_timed_job", jObject.toString());
+							cec.trigger(0, "client-execute_timed_job", jObject.toString());
 						}else{
-							cem.trigger(0, "client-execute_job", jObject.toString());
+							cec.trigger(0, "client-execute_job", jObject.toString());
 						}
 						
 						synchronized(this){
@@ -397,7 +397,7 @@ public class JobCoordinator {
 						DeviceHolder dh = deviceCoordinator.getDeviceHolder(getJobHolder(jobId).getDeviceId());
 						JSONObject jObject = new JSONObject("{deviceName: "+dh.getDeviceName()+", deviceType: "+dh.getDeviceType().toString()+", jobId: "+jobId+"}");
 						
-						cem.trigger(0, "client-cancel_job", jObject.toString());
+						cec.trigger(0, "client-cancel_job", jObject.toString());
 					}catch(Exception e){
 						Log.w(TAG, "Error creating JSON Object for failing job");
 					}

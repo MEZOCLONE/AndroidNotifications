@@ -14,17 +14,28 @@ import com.matt.pusher.ChannelEventCoordinator;
 public class DeviceManagementTask extends AsyncTask<String, Integer, Long> {
 	
 	private static String TAG = "DeviceManagementTask";
-	private ChannelEventCoordinator channelEventManager;
+	private ChannelEventCoordinator channelEventCoordinator;
 	private JSONObject jObject;
+	private ChannelEventCoordinator cec;
 	
 	public DeviceManagementTask(Context ctx){
 		try {
-			channelEventManager = ChannelEventCoordinator.getInstance();
+			getChannelEventCoordinatorInstance();
 			jObject = new JSONObject("{requestedDevice: all, senderType: controller}");
 		} catch (JSONException e) {
 			Log.e(TAG, "Error creating jObject", e);
-		} catch (NotActiveException e) {
-			Log.w(TAG, e.getMessage());
+		}
+	}
+	
+	private void getChannelEventCoordinatorInstance(){
+		if(cec == null){
+			try {
+				cec = ChannelEventCoordinator.getInstance();
+			} catch (NotActiveException e) {
+				Log.w(TAG, e.getMessage());
+			}
+		}else{
+			Log.d(TAG, "ChannelEventCoordinator is already assigned");
 		}
 	}
 
@@ -39,7 +50,8 @@ public class DeviceManagementTask extends AsyncTask<String, Integer, Long> {
 			while(true){
 				//PusherConnectionManager.prepare(mPusher, registeredChannelName, ctx, 0);
 				Log.i(TAG+" ManagementThread", "Polling for new devices");
-				channelEventManager.trigger(0, "client-device_poll_new", jObject.toString());
+				getChannelEventCoordinatorInstance();
+				channelEventCoordinator.trigger(0, "client-device_poll_new", jObject.toString());
 				
 				synchronized (this) {
 					wait(300000);

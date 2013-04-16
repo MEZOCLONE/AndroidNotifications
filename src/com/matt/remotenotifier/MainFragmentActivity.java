@@ -79,7 +79,7 @@ public class MainFragmentActivity extends FragmentActivity {
 		}
 		
 		// Create a new connection to Pusher.
-		HttpAuthorizer auth = new HttpAuthorizer("http://www.someplace.com/pusher/auth");
+		HttpAuthorizer auth = new HttpAuthorizer("http://mansion.entrydns.org:8080/");
 		PusherOptions opts = new PusherOptions().setAuthorizer(auth);
 		mPusher = new Pusher(appPrefs.getKey(), opts);
 				
