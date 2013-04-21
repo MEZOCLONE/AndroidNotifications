@@ -142,7 +142,7 @@ public class AppPreferences {
 		try {
 			return new ObjectInputStream(new Base64InputStream(new ByteArrayInputStream(encodedObject.getBytes()), 0)).readObject();
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.w(TAG, "stringToObject failed ["+e.getMessage()+"]");
 		}
 		return null;
 	}

@@ -23,11 +23,13 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.matt.pusher.ChannelEventCoordinator;
+import com.matt.pusher.ConnectionEventManager;
 import com.matt.pusher.PusherConnectionManager;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.PrivateChannel;
 import com.pusher.client.connection.Connection;
+import com.pusher.client.connection.ConnectionState;
 import com.pusher.client.util.HttpAuthorizer;
 
 public class MainFragmentActivity extends FragmentActivity {
@@ -39,6 +41,7 @@ public class MainFragmentActivity extends FragmentActivity {
 	private DeviceCoordinator deviceCoordinator;
 	private JobCoordinator jobCoordinator;
 	private ChannelEventCoordinator channelEventCoordinator;
+	private ConnectionEventManager connectionEventManager;
 	private NetworkManager receiver;
 	//private static final String PUBLIC_CHANNEL = "matt_sandbox";
 	private static final String PRIVATE_CHANNEL = "private-matt_sandbox";
@@ -64,7 +67,6 @@ public class MainFragmentActivity extends FragmentActivity {
 		
 		appPrefs = new AppPreferences(getApplicationContext());
 		
-		// TODO: Check for empty string
 		if (appPrefs.getKey() == null || appPrefs.getKey().length() <= 0) {
 			try {
 				Intent i = new Intent("com.matt.remotenotifier.SetPreferences");
@@ -131,11 +133,9 @@ public class MainFragmentActivity extends FragmentActivity {
 		});
 		updateIncomingList.start();
 		
-		try {
-			PusherConnectionManager.prepare(this, mPusher, 0, TAG);
-		} catch (NetworkErrorException e) {
-			Log.w(TAG, e.getMessage());
-		}
+		connectionEventManager = new ConnectionEventManager(getApplicationContext(), mPusher);
+		PusherConnectionManager pcm = new PusherConnectionManager(getApplicationContext(), mPusher, PusherConnectionManager.MODE_CONNECT_NEW_MANAGER, connectionEventManager, TAG);
+		pcm.run();
 		
 		Log.d(TAG, "Registering PusherNetworkReceiver intent");
 		IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
@@ -170,6 +170,7 @@ public class MainFragmentActivity extends FragmentActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		final Long now = System.currentTimeMillis();
+		PusherConnectionManager pusherConnectionManager;
 		switch (item.getItemId()) {
 		case R.id.itemSettings:
 			try {
@@ -180,21 +181,18 @@ public class MainFragmentActivity extends FragmentActivity {
 				Log.d(TAG, e.getMessage());
 			}
 		case R.id.itemDisconnect:
-			try {
-				PusherConnectionManager.prepare(this, mPusher, 1, TAG);
-			} catch (NetworkErrorException e) {
-				Log.w(TAG, e.getMessage());
-			}
+			pusherConnectionManager = new PusherConnectionManager(this, mPusher, PusherConnectionManager.MODE_CONNECT, TAG);
+			pusherConnectionManager.run();
 			incomingFragment.addItem("Disconnected from Pusher Service","", R.color.haloDarkRed, 255, now);
 			return true;
 			
 		case R.id.itemReconnect:
-			try {
-				PusherConnectionManager.prepare(this, mPusher, 1, TAG);
-				PusherConnectionManager.prepare(this, mPusher, 0, TAG);
-			} catch (NetworkErrorException e) {
-				Log.w(TAG, e.getMessage());
-			}
+			pusherConnectionManager = new PusherConnectionManager(this, mPusher, PusherConnectionManager.MODE_DISCONNECT, TAG);
+			pusherConnectionManager.run();
+			
+			pusherConnectionManager = new PusherConnectionManager(this, mPusher, PusherConnectionManager.MODE_CONNECT, TAG);
+			pusherConnectionManager.run();
+			
 			Toast.makeText(getApplicationContext(),"Reconnecting to Pusher Services",Toast.LENGTH_SHORT).show();
 			return true;
 				
@@ -267,11 +265,12 @@ public class MainFragmentActivity extends FragmentActivity {
 			jobCoordinator.shutdown(appPrefs);
 			deviceCoordinator.shutdown();
 			
-			PusherConnectionManager.prepare(this, mPusher, 1, TAG);
+			Log.d(TAG, "Unbinding connectionEventManager");
+			mPusher.getConnection().unbind(ConnectionState.ALL, connectionEventManager);
+			PusherConnectionManager pcm = new PusherConnectionManager(getApplicationContext(), mPusher, PusherConnectionManager.MODE_DISCONNECT, TAG);
+			pcm.run();
 		}catch(NotActiveException e){
 			Log.e(TAG, "Error on coordinator shutdown()", e);
-		} catch (NetworkErrorException e) {
-			Log.w(TAG, "Can't connect to Pusher", e);
 		}		
 		Log.i(TAG, "RemoteNotifier Destroyed");
 	}
