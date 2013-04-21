@@ -40,10 +40,4 @@
         </activity>
     </application>
     
-    <instrumentation 
-        android:name="com.matt.remotenotifier.testRunner"
-        android:targetPackage="com.matt.remotenotifier"
-        android:label="Sample tests">
-    </instrumentation>
-
 </manifest>

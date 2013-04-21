@@ -27,7 +27,6 @@ import com.matt.pusher.PusherConnectionManager;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.PrivateChannel;
-import com.pusher.client.connection.Connection;
 import com.pusher.client.connection.ConnectionState;
 import com.pusher.client.util.HttpAuthorizer;
 
@@ -66,7 +65,7 @@ public class MainFragmentActivity extends FragmentActivity {
 		
 		appPrefs = new AppPreferences(getApplicationContext());
 		
-		if (appPrefs.getKey() == null || appPrefs.getKey().length() <= 0) {
+		if (appPrefs.getKey() == null) {
 			try {
 				Intent i = new Intent("com.matt.remotenotifier.SetPreferences");
 				startActivityForResult(i, 1);
