@@ -38,6 +38,12 @@
 			<version>r6</version>
 		</dependency>
 		<dependency>
+			<groupId>com.google.android</groupId>
+			<artifactId>android-test</artifactId>
+			<version>2.2.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.pusher</groupId>
 			<artifactId>pusher-java-client</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
