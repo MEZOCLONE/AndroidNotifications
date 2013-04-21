@@ -47,7 +47,7 @@
 			<groupId>com.pusher</groupId>
 			<artifactId>pusher-java-client</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<scope>provided</scope>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
