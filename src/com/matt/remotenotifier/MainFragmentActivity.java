@@ -65,7 +65,7 @@ public class MainFragmentActivity extends FragmentActivity {
 		appPrefs = new AppPreferences(getApplicationContext());
 		
 		// TODO: Check for empty string
-		if (appPrefs.getKey() == null || appPrefs.getSecret() == null) {
+		if (appPrefs.getKey() == null || appPrefs.getKey().length() <= 0) {
 			try {
 				Intent i = new Intent("com.matt.remotenotifier.SetPreferences");
 				startActivityForResult(i, 1);

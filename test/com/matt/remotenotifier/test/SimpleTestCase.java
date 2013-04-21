@@ -11,7 +11,7 @@ public class SimpleTestCase extends ActivityInstrumentationTestCase2<MainFragmen
 	private IncomingFragment inf;
 
 	public SimpleTestCase() {
-		super("com.matt.remotenotifier", MainFragmentActivity.class);
+		super(MainFragmentActivity.class);
 	}
 
 	protected void setUp() throws Exception {
