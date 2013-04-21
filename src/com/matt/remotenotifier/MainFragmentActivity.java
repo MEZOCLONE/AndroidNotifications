@@ -27,7 +27,6 @@ import com.matt.pusher.PusherConnectionManager;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.PrivateChannel;
-import com.pusher.client.connection.Connection;
 import com.pusher.client.connection.ConnectionState;
 import com.pusher.client.util.HttpAuthorizer;
 
