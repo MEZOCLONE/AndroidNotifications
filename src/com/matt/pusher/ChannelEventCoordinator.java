@@ -3,6 +3,9 @@ package com.matt.pusher;
 import java.io.NotActiveException;
 import java.util.ArrayList;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
@@ -12,7 +15,6 @@ import com.matt.remotenotifier.IncomingFragment;
 import com.matt.remotenotifier.R;
 import com.pusher.client.channel.PrivateChannel;
 import com.pusher.client.channel.PrivateChannelEventListener;
-import com.pusher.client.channel.SubscriptionEventListener;
 
 public class ChannelEventCoordinator implements PrivateChannelEventListener {
 	private IncomingFragment incomingFragment;
@@ -54,7 +56,7 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 		if(instance != null){
 			return instance;
 		}else{
-			throw new NotActiveException("Channel Manager not yet active");
+			throw new NotActiveException("Channel Coordinator not yet active");
 		}
 	}
 	
@@ -62,12 +64,20 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 		if(instance != null){
 			return instance;
 		}else{
-			return new ChannelEventCoordinator(incomingFragment, ctx);
+			return instance = new ChannelEventCoordinator(incomingFragment, ctx);
 		}
 	}
 	
-	public void assignChannelToManager(PrivateChannel pChannel){
+	public void assignChannelToCoordinator(PrivateChannel pChannel) throws IllegalStateException {
+		if(channelList.contains(pChannel)){
+			throw new IllegalStateException("Channel ["+pChannel.getName()+"] is already assigned to ChannelEventCoordinator");
+		}
+		Log.d(TAG, "Adding Channel ["+pChannel.getName()+"] to Channel Coordinator");
 		channelList.add(pChannel);
+		
+		for(String event : eventBindList){
+			Log.d(TAG, "Binding to event ["+event+"]");
+		}
 		
 		bindToDeviceEvents(pChannel);
 		bindToJobEvents(pChannel);
@@ -103,7 +113,10 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 	public void onSubscriptionSucceeded(String channelName) {
 		Long now = System.currentTimeMillis();
 		addItemToNotificationView("Remote Notifier Connected", "",R.color.haloLightBlue, 255, now);
+		Log.i(TAG, "Subscription succeeded to "+channelName);
 		try {
+			Log.d(TAG, "Attempting to start device tasks");
+			deviceCoordinator.startDeviceHeartbeatTask();
 			deviceCoordinator.startDeviceManagentTask();
 		} catch (Exception e) {
 			Log.w(TAG, e.getMessage());
@@ -117,7 +130,8 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 		addItemToNotificationView("Remote Notifier Connection Failed", "",R.color.haloDarkRed, 255, now);
 	}
 	
-	public void trigger(int channelId, String eventName, String data){
+	public void trigger(int channelId, String eventName, String data) throws Exception{
+		Log.d(TAG, "Request to trigger event ["+eventName+"] on channel ["+channelList.get(channelId)+"]");
 		channelList.get(channelId).trigger(eventName, data);
 		
 	}
@@ -133,6 +147,16 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 				incomingFragment.notifyDataSetChanged();
 			}
 		});
+	}
+	
+	public static JSONObject toJsonObject(String data) throws JSONException{
+		Log.d(TAG, "Incoming eventData ["+data+"]");
+		data = data.trim();
+		data = data.replace("\\", "");
+		data = data.substring(data.indexOf("{"), data.lastIndexOf("}") + 1);
+		JSONObject eventData = new JSONObject(data);
+		
+		return eventData;
 	}
 
 }

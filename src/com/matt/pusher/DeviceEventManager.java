@@ -13,7 +13,6 @@ import com.matt.remotenotifier.DeviceType;
 import com.matt.remotenotifier.IncomingFragment;
 import com.matt.remotenotifier.R;
 import com.pusher.client.channel.PrivateChannelEventListener;
-import com.pusher.client.channel.SubscriptionEventListener;
 
 // Maybe in the future I could use Gson to deserialize the Json straight to the DeviceHolder object. But that's for another time...
 public class DeviceEventManager implements PrivateChannelEventListener  {
@@ -24,6 +23,7 @@ public class DeviceEventManager implements PrivateChannelEventListener  {
 	
 	public DeviceEventManager(IncomingFragment incomingFragment){
 		this.incomingFragment = incomingFragment;
+		Log.i(TAG, "DeviceEventManager started okay");
 	}
 	
 	@Override
@@ -45,7 +45,7 @@ public class DeviceEventManager implements PrivateChannelEventListener  {
 	
 	private void handleDeviceHeartbeat(String data) {
 		try {
-			JSONObject eventData = new JSONObject(data);
+			JSONObject eventData = ChannelEventCoordinator.toJsonObject(data);
 			String deviceName = eventData.getString("deviceName");
 			DeviceType deviceType = DeviceType.valueOf(eventData.getString("deviceType"));
 			deviceCoordinator.handleHeartbeat(deviceName, deviceType);
@@ -58,12 +58,12 @@ public class DeviceEventManager implements PrivateChannelEventListener  {
 
 	private void handleDeregisterDeviceEvent(String data) {
 		try{
-			JSONObject eventData = new JSONObject(data);
+			JSONObject eventData = ChannelEventCoordinator.toJsonObject(data);
 			DeviceHolder device = deviceCoordinator.getDeviceHolder(eventData.getString("deviceName"),  DeviceType.valueOf(eventData.getString("deviceType")));
 			if(deviceCoordinator.deviceHolderExists(device)){
 				deviceCoordinator.deregisterDevice(device);
 				Long now = System.currentTimeMillis();
-				incomingFragment.addItem("Device "+device.getDeviceName()+" unregistered", "", R.color.haloDarkOrange, 120, now);
+				addItemToNotificationView("Device "+device.getDeviceName()+" unregistered", "", R.color.haloDarkOrange, 120, now);
 			}else{
 				Log.i(TAG, "Device ["+eventData.getString("deviceName")+"] can not be deregistered as it does not exist. Ignoring.");
 			}
@@ -74,20 +74,23 @@ public class DeviceEventManager implements PrivateChannelEventListener  {
 
 	private void handleRegisterDeviceEvent(String data) {
 		try{
-			JSONObject eventData = new JSONObject(data);
-			DeviceHolder device = deviceCoordinator.getNewDeviceHolder(eventData.getString("deviceName"),  DeviceType.valueOf(eventData.getString("deviceType")));
-			if(!deviceCoordinator.deviceHolderExists(device)){
-				if(deviceCoordinator.registerDevice(device) != -1){
+			//Gson gson = new Gson();
+			//DeviceHolder deviceHolder = gson.fromJson(data, DeviceHolder.class);
+			JSONObject eventData = ChannelEventCoordinator.toJsonObject(data);
+			DeviceHolder deviceHolder = deviceCoordinator.getNewDeviceHolder(eventData.getString("deviceName"),  DeviceType.valueOf(eventData.getString("deviceType")));
+			Log.d(TAG, "Incoming request to register device ["+eventData.getString("deviceName")+"]");
+			if(!deviceCoordinator.deviceHolderExists(deviceHolder)){
+				if(deviceCoordinator.registerDevice(deviceHolder) != -1){
 					//We do this separately as a device may not have supplied a command list at registration
-					deviceCoordinator.addCommandsToDevice(device, eventData);
+					deviceCoordinator.addCommandsToDevice(deviceHolder, eventData);
 					Long now = System.currentTimeMillis();
-					incomingFragment.addItem("Device "+device.getDeviceName()+" registered", "", R.color.haloLightOrange, 120, now);
+					addItemToNotificationView("Device "+deviceHolder.getDeviceName()+" registered", "", R.color.haloLightOrange, 120, now);
 				}
 			}else{
-				Log.i(TAG, "Device ["+device.getDeviceName()+"] is already registered. Ingorning");
+				Log.i(TAG, "Device ["+deviceHolder.getDeviceName()+"] is already registered. Ingorning");
 			}
 		}catch(Exception e){
-			Log.e(TAG, "Unable to parse register_device event ["+e.getLocalizedMessage()+"]");
+			Log.e(TAG, "Unable to parse register_device event ["+e.getMessage()+"]", e);
 		}
 	}
 
@@ -111,6 +114,17 @@ public class DeviceEventManager implements PrivateChannelEventListener  {
 	@Override
 	public void onAuthenticationFailure(String arg0, Exception arg1) {
 		Log.w(TAG, "Failed to bind to Device Events");
+	}
+	
+	private void addItemToNotificationView(final String main, final String sub, final int colourResourseId, final int alpha, final Long time){
+		incomingFragment.getActivity().runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
+				incomingFragment.addItem(main, sub , colourResourseId, alpha, time);
+				incomingFragment.notifyDataSetChanged();
+			}
+		});
 	}
 	
 }

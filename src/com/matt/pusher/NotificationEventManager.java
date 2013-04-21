@@ -11,7 +11,6 @@ import com.matt.remotenotifier.DeviceType;
 import com.matt.remotenotifier.IncomingFragment;
 import com.matt.remotenotifier.R;
 import com.pusher.client.channel.PrivateChannelEventListener;
-import com.pusher.client.channel.SubscriptionEventListener;
 
 public class NotificationEventManager implements PrivateChannelEventListener {
 	
@@ -21,6 +20,7 @@ public class NotificationEventManager implements PrivateChannelEventListener {
 
 	public NotificationEventManager(IncomingFragment incomingFragment) {
 		this.incomingFragment = incomingFragment;
+		Log.i(TAG, "NotificationEventManager started okay");
 	}
 	
 	private void getDeviceCoodinatorInstance(){
@@ -45,7 +45,7 @@ public class NotificationEventManager implements PrivateChannelEventListener {
 	private void handlePushNotificationEvent(String data) {
 		try{
 			getDeviceCoodinatorInstance();
-			JSONObject eventData = new JSONObject(data);
+			JSONObject eventData = ChannelEventCoordinator.toJsonObject(data);
 			String deviceName = eventData.getString("deviceName");
 			DeviceType deviceType = DeviceType.valueOf(eventData.getString("deviceType"));
 			// Whoa there, you're probably thinkin' if true! Are you mad! Well, no, I need to replace this with something from the config
@@ -58,7 +58,7 @@ public class NotificationEventManager implements PrivateChannelEventListener {
 					Log.i(TAG, "Incoming notification from ["+deviceName+"]");
 					Log.d(TAG, "Message: ["+mainText+"] ["+subText+"]");
 					Long now = System.currentTimeMillis();
-					incomingFragment.addItem("["+deviceName+"] "+mainText, subText, R.color.haloLightGreen, 255, now);
+					addItemToNotificationView("["+deviceName+"] "+mainText, subText, R.color.haloLightGreen, 255, now);
 				}
 			}
 		}catch(Exception e){
@@ -75,6 +75,17 @@ public class NotificationEventManager implements PrivateChannelEventListener {
 	@Override
 	public void onAuthenticationFailure(String arg0, Exception arg1) {
 		Log.w(TAG, "Failed to bing Notification Events");		
+	}
+	
+	private void addItemToNotificationView(final String main, final String sub, final int colourResourseId, final int alpha, final Long time){
+		incomingFragment.getActivity().runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
+				incomingFragment.addItem(main, sub , colourResourseId, alpha, time);
+				incomingFragment.notifyDataSetChanged();
+			}
+		});
 	}
 	
 }

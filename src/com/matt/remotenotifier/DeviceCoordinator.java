@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.matt.pusher.ChannelEventCoordinator;
@@ -21,8 +23,8 @@ public class DeviceCoordinator {
 	private Integer deviceCount;
 	private ArrayList<DeviceHolder> deviceList;
 	private Context ctx;
-	private JSONObject jObject = null;
 	private DeviceManagementTask dmt;
+	private DeviceHeartbeatTask dht;
 	private ChannelEventCoordinator cec;
 	
 	static public DeviceCoordinator getInstance() throws NotActiveException{
@@ -47,16 +49,8 @@ public class DeviceCoordinator {
 		deviceCount = 0;
 		deviceList = new ArrayList<DeviceHolder>();
 		this.ctx = ctx;
-		try {
-			jObject = new JSONObject("{requestedDevice: all, senderType: controller}");
-			getChannelEventCoordinatorInstance();
-			Log.i(TAG, "Device Coodinator Started Okay");
-		} catch (JSONException e) {
-			Log.e(TAG, "Error creating jObject", e);
-		}
-
-		// Start the management threads. One looks after all heatbeats to the devices, the other is handle polling devices
-		deviceHeatbeatThread();
+		getChannelEventCoordinatorInstance();
+		Log.i(TAG, "Device Coodinator Started Okay");
 	}
 	
 	public void shutdown() throws NotActiveException {
@@ -227,6 +221,8 @@ public class DeviceCoordinator {
 					cec.trigger(0, "client-heartbeat_request", jObj.toString());
 				} catch (JSONException e) {
 					Log.w(TAG, "Error requesting heartbeat from device "+deviceName, e);
+				} catch (Exception e) {
+					Log.e(TAG, e.getMessage());
 				}
 			}
 		});
@@ -243,53 +239,41 @@ public class DeviceCoordinator {
 		}
 	}
 	
-	private void deviceHeatbeatThread() {
-		Thread deviceHeartbeatThread = new Thread(new Runnable() {
-			final Long HEARTBEAT_TIMEOUT = 180000L;
-			
-			@Override
-			public void run() {
-				Log.d(TAG + " HeartbeatThread", "Starting Heartbeat Management Thread");
-				try {
-					// Wait before starting the main loop
-					synchronized (this) {
-						wait(2000);
-					}
-					while (true) {
-						if (getDeviceCount() > 0) {
-							Log.i(TAG + " HeartbeatThread", "Requesting heatbeats");
-							getChannelEventCoordinatorInstance();
-							cec.trigger(0, "client-heartbeat_request", jObject.toString());
-							synchronized (this) {
-								wait(HEARTBEAT_TIMEOUT);
-							}
-
-							for (DeviceHolder dh : deviceList) {
-								if (dh.getLastHeatbeatTime() < (System.currentTimeMillis() - HEARTBEAT_TIMEOUT)) {
-									Log.i(TAG, "Device ["+ dh.getDeviceName()+ "] has not responded to heartbeats in a timely mannor. Removing device");
-									deregisterDevice(dh); 
-								}
-							}
-
-						} else {
-							Log.i(TAG + " HeartbeatThread", "No devices registered - Not requesting heartbeats");
-						}
-						synchronized (this) {
-							wait(300000); // Request heartbeats every 5 mins
-						}
-					}
-				} catch (Exception e) {
-					Log.e(TAG + " HeartbeatThread", "Error occoured on HeartbeatManagement thread", e);
-				}
-
-			}
-		});
-		deviceHeartbeatThread.start();
+	@SuppressLint("NewApi")
+	private void deviceHeatbeatTask() {
+		// These need to be pooled
+		dht = new DeviceHeartbeatTask(ctx);
+		dht.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 	
+	public void startDeviceHeartbeatTask() throws Exception{
+		if(instance == null){
+			throw new NotActiveException("DeviceCoordinator not yet active");
+		}
+		
+		if(dht == null){
+			deviceHeatbeatTask();
+		}else{
+			throw new Exception("DeviceManagementTask already running");
+		}
+	}
+	
+	public void stopDeviceHeartbeatTask() throws Exception {
+		if(instance == null){
+			throw new NotActiveException("DeviceCoordinator not yet active");
+		}
+		if(dht != null){
+			dht.cancel(true);
+			dht = null;
+		}else{
+			throw new Exception("DeviceManagementTask not started");
+		}
+	}
+	
+	@SuppressLint("NewApi")
 	private void deviceManagementTask(){
 		dmt = new DeviceManagementTask(ctx);
-		dmt.execute();
+		dmt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 	
 	public void startDeviceManagentTask() throws Exception{
@@ -297,7 +281,7 @@ public class DeviceCoordinator {
 			throw new NotActiveException("DeviceCoordinator not yet active");
 		}
 		
-		if(dmt != null){
+		if(dmt == null){
 			deviceManagementTask();
 		}else{
 			throw new Exception("DeviceManagementTask already running");

@@ -14,13 +14,11 @@ import com.matt.pusher.ChannelEventCoordinator;
 public class DeviceManagementTask extends AsyncTask<String, Integer, Long> {
 	
 	private static String TAG = "DeviceManagementTask";
-	private ChannelEventCoordinator channelEventCoordinator;
 	private JSONObject jObject;
 	private ChannelEventCoordinator cec;
 	
 	public DeviceManagementTask(Context ctx){
 		try {
-			getChannelEventCoordinatorInstance();
 			jObject = new JSONObject("{requestedDevice: all, senderType: controller}");
 		} catch (JSONException e) {
 			Log.e(TAG, "Error creating jObject", e);
@@ -48,10 +46,18 @@ public class DeviceManagementTask extends AsyncTask<String, Integer, Long> {
 				wait(2000);
 			}
 			while(true){
-				//PusherConnectionManager.prepare(mPusher, registeredChannelName, ctx, 0);
+
 				Log.i(TAG+" ManagementThread", "Polling for new devices");
+				
 				getChannelEventCoordinatorInstance();
-				channelEventCoordinator.trigger(0, "client-device_poll_new", jObject.toString());
+				
+				try{
+					if(cec != null){
+						cec.trigger(0, "client-device_poll_new", jObject.toString());
+					}
+				}catch(Exception e){
+					Log.e(TAG, e.getMessage());
+				}
 				
 				synchronized (this) {
 					wait(300000);

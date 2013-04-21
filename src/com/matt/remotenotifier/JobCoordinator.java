@@ -11,14 +11,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.net.ParseException;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.matt.pusher.ChannelEventCoordinator;
-import com.matt.pusher.PusherConnectionManager;
 
 /*
  * Singleton instance - Use getInstance
@@ -265,12 +263,15 @@ public class JobCoordinator {
 							}
 							jObject.put("args", argArray);
 						}
-						
-						if(!jh.getRunDateTime().isEmpty()){
-							jObject.put("dateTime", jh.getRunDateTime());
-							cec.trigger(0, "client-execute_timed_job", jObject.toString());
-						}else{
-							cec.trigger(0, "client-execute_job", jObject.toString());
+						try{
+							if(!jh.getRunDateTime().isEmpty()){
+								jObject.put("dateTime", jh.getRunDateTime());
+								cec.trigger(0, "client-execute_timed_job", jObject.toString());
+							}else{
+								cec.trigger(0, "client-execute_job", jObject.toString());
+							}
+						}catch(Exception e){
+							Log.e(TAG, e.getMessage());
 						}
 						
 						synchronized(this){

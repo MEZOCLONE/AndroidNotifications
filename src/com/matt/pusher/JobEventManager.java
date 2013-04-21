@@ -12,7 +12,6 @@ import com.matt.remotenotifier.IncomingFragment;
 import com.matt.remotenotifier.JobCoordinator;
 import com.matt.remotenotifier.R;
 import com.pusher.client.channel.PrivateChannelEventListener;
-import com.pusher.client.channel.SubscriptionEventListener;
 
 public class JobEventManager implements PrivateChannelEventListener {
 	
@@ -22,6 +21,7 @@ public class JobEventManager implements PrivateChannelEventListener {
 
 	public JobEventManager(IncomingFragment incomingFragment) {
 		this.incomingFragment = incomingFragment;
+		Log.i(TAG, "JobEventManager started okay");
 	}
 	
 	private void getJobCoodinatorInstance(){
@@ -51,12 +51,12 @@ public class JobEventManager implements PrivateChannelEventListener {
 	private void handleJobFailEvent(String data) {
 		try{
 			getJobCoodinatorInstance();
-			JSONObject eventData = new JSONObject(data);
+			JSONObject eventData = ChannelEventCoordinator.toJsonObject(data);
 			String deviceName = eventData.getString("deviceName");
 			int jobId = eventData.getInt("jobId");
 			if(jobCoordinator.failJob(jobId)){
 				Long now = System.currentTimeMillis();
-				incomingFragment.addItem(jobCoordinator.getJobName(jobId)+" caused error on "+deviceName, "", R.color.haloDarkRed, 255, now);
+				addItemToNotificationView(jobCoordinator.getJobName(jobId)+" caused error on "+deviceName, "", R.color.haloDarkRed, 255, now);
 			}						
 		}catch(Exception e){
 			Log.w(TAG, "Unable to parse device_ack_execute_job event", e);
@@ -66,7 +66,7 @@ public class JobEventManager implements PrivateChannelEventListener {
 	private void handleJobExecuteEvent(String data) {
 		try{
 			getJobCoodinatorInstance();
-			JSONObject eventData = new JSONObject(data);
+			JSONObject eventData = ChannelEventCoordinator.toJsonObject(data);
 			String deviceName = eventData.getString("deviceName");
 			DeviceType deviceType = DeviceType.valueOf(eventData.getString("deviceType"));
 			int jobId = eventData.getInt("jobId");
@@ -85,16 +85,15 @@ public class JobEventManager implements PrivateChannelEventListener {
 			}
 			Long now = System.currentTimeMillis();
 			switch (jobCoodinatorStatus){
-				case 1: incomingFragment.addItem(jobCoordinator.getJobName(jobId)+" recieved by "+deviceName, "", R.color.haloLightPurple, 255, now);
+				case 1: addItemToNotificationView(jobCoordinator.getJobName(jobId)+" recieved by "+deviceName, "", R.color.haloLightPurple, 255, now);
 						break;
-				case 2: incomingFragment.addItem(jobCoordinator.getJobName(jobId)+" completed by "+deviceName, returnedparsedData, R.color.haloDarkPurple, 255, now);
+				case 2: addItemToNotificationView(jobCoordinator.getJobName(jobId)+" completed by "+deviceName, returnedparsedData, R.color.haloDarkPurple, 255, now);
 						break;
-				case 0: incomingFragment.addItem(jobCoordinator.getJobName(jobId)+" caused error on "+deviceName, "", R.color.haloDarkRed, 255, now);
+				case 0: addItemToNotificationView(jobCoordinator.getJobName(jobId)+" caused error on "+deviceName, "", R.color.haloDarkRed, 255, now);
 						break;
 			}
 		}catch(Exception e){
-			Log.w(TAG, "Unable to parse device_ack_execute_job event");
-			Log.d(TAG, e.getMessage());
+			Log.w(TAG, "Unable to parse device_ack_execute_job event ["+e.getMessage()+"]");
 		}
 		
 	}
@@ -107,6 +106,17 @@ public class JobEventManager implements PrivateChannelEventListener {
 	@Override
 	public void onAuthenticationFailure(String arg0, Exception arg1) {
 		Log.w(TAG, "Failed to bind to Job Events");	
+	}
+	
+	private void addItemToNotificationView(final String main, final String sub, final int colourResourseId, final int alpha, final Long time){
+		incomingFragment.getActivity().runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
+				incomingFragment.addItem(main, sub , colourResourseId, alpha, time);
+				incomingFragment.notifyDataSetChanged();
+			}
+		});
 	}
 
 }

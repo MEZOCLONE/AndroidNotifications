@@ -1,12 +1,11 @@
 package com.matt.pusher;
 
-import com.matt.remotenotifier.NetworkManager;
-import com.pusher.client.Pusher;
-import com.pusher.client.connection.ConnectionState;
-
 import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.util.Log;
+
+import com.matt.remotenotifier.NetworkManager;
+import com.pusher.client.Pusher;
 
 public class PusherConnectionManager implements Runnable{
 	private static String TAG = "PusherConnectionManager";
@@ -33,11 +32,15 @@ public class PusherConnectionManager implements Runnable{
 		switch(runMode){
 		case 0:
 			// We can call this even if we are connected - calls are ignored unless ConnectionState = DISCONECTED
-			mPusher.connect(new ConnectionEventManager(ctx));
+			mPusher.connect(new ConnectionEventManager(ctx, mPusher));
 			break;
 			
 		case 1:
 			mPusher.disconnect();
+			break;
+		
+		case 2:
+			mPusher.connect();
 			break;
 			
 		default: 

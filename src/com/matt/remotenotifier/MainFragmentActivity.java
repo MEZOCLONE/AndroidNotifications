@@ -27,6 +27,7 @@ import com.matt.pusher.PusherConnectionManager;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.PrivateChannel;
+import com.pusher.client.connection.Connection;
 import com.pusher.client.util.HttpAuthorizer;
 
 public class MainFragmentActivity extends FragmentActivity {
@@ -37,7 +38,7 @@ public class MainFragmentActivity extends FragmentActivity {
 	private CommandFragment commandFragment;
 	private DeviceCoordinator deviceCoordinator;
 	private JobCoordinator jobCoordinator;
-	private ChannelEventCoordinator channelEventManager;
+	private ChannelEventCoordinator channelEventCoordinator;
 	private NetworkManager receiver;
 	//private static final String PUBLIC_CHANNEL = "matt_sandbox";
 	private static final String PRIVATE_CHANNEL = "private-matt_sandbox";
@@ -62,11 +63,6 @@ public class MainFragmentActivity extends FragmentActivity {
 		commandFragment = (CommandFragment) pagerAdapter.getItem(1);
 		
 		appPrefs = new AppPreferences(getApplicationContext());
-		
-		Log.d(TAG, "Registering PusherNetworkReceiver intent");
-		IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        receiver = new NetworkManager();
-        this.registerReceiver(receiver, filter);
 		
 		// TODO: Check for empty string
 		if (appPrefs.getKey() == null || appPrefs.getSecret() == null) {
@@ -134,23 +130,33 @@ public class MainFragmentActivity extends FragmentActivity {
 			}
 		});
 		updateIncomingList.start();
+		
+		try {
+			PusherConnectionManager.prepare(this, mPusher, 0, TAG);
+		} catch (NetworkErrorException e) {
+			Log.w(TAG, e.getMessage());
+		}
+		
+		Log.d(TAG, "Registering PusherNetworkReceiver intent");
+		IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        receiver = new NetworkManager(mPusher);
+        this.registerReceiver(receiver, filter);
 	}
 	
 	@Override
 	public void onStart(){
 		super.onStart();
 		try {
-			PusherConnectionManager.prepare(this, mPusher, 0, TAG);
 			
 			deviceCoordinator = DeviceCoordinator.getInstance(this);
 			jobCoordinator = JobCoordinator.getInstance(this);
 			
-			channelEventManager = ChannelEventCoordinator.getInstance(incomingFragment, this);
-			PrivateChannel pChannel = mPusher.subscribePrivate(PRIVATE_CHANNEL, channelEventManager);
-			channelEventManager.assignChannelToManager(pChannel);
+			channelEventCoordinator = ChannelEventCoordinator.getInstance(incomingFragment, this);
+			PrivateChannel pChannel = mPusher.subscribePrivate(PRIVATE_CHANNEL, channelEventCoordinator);
+			channelEventCoordinator.assignChannelToCoordinator(pChannel);
 			
 		} catch (Exception e) {
-			Log.w(TAG, "DeviceManagementTask Error", e);
+			Log.w(TAG, e.getMessage());
 		}
 	}
 	
@@ -206,12 +212,16 @@ public class MainFragmentActivity extends FragmentActivity {
 				JSONObject jObject = null;
 				@Override
 				public void run() {
+					
 					try {
 						jObject = new JSONObject("{requestedDeviceTypes: all, senderType: controller}");
+						channelEventCoordinator.trigger(0, "client-device_poll_new", jObject.toString());
 					} catch (JSONException e) {
 						Log.e(TAG, e.getMessage());
+					} catch (Exception e) {
+						Log.e(TAG, e.getMessage());
 					}
-					channelEventManager.trigger(0, "client-device_poll_new", jObject.toString());
+		
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
