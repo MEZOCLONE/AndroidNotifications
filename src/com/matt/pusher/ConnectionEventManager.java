@@ -1,6 +1,5 @@
 package com.matt.pusher;
 
-import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.util.Log;
 
@@ -30,12 +29,9 @@ public class ConnectionEventManager implements ConnectionEventListener {
 		if((NetworkManager.isOnline(ctx)) && (connectionState.getCurrentState() == ConnectionState.DISCONNECTED)){
 			if(connectionRetry != CONNECTION_RETRY_TIMEOUT){
 				Log.i(TAG, "Attempting to reconnect attempt ["+connectionRetry+"]");
-				try {
-					connectionRetry++;
-					PusherConnectionManager.prepare(ctx, mPusher, 2, TAG);
-				} catch (NetworkErrorException e) {
-					Log.w(TAG, e.getMessage());
-				}
+				connectionRetry++;
+				PusherConnectionManager pusherConnectionManager = new PusherConnectionManager(ctx, mPusher, PusherConnectionManager.MODE_CONNECT, TAG);
+				pusherConnectionManager.run();
 			}else{
 				Log.e(TAG, "Reconnection attempts reached! Use Reconnect to try again");
 				connectionRetry = 1;

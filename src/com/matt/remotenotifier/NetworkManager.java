@@ -39,24 +39,16 @@ public class NetworkManager extends BroadcastReceiver {
 	    if(networkInfo != null && networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
 	       Log.d(TAG, "WiFi Connection");
 	       if(mPusherState == ConnectionState.DISCONNECTED){
-	    		try {
-	    			Log.i(TAG, "Trying to reconnect to Pusher");
-					PusherConnectionManager.prepare(ctx, mPusher, 2, TAG);
-				} catch (NetworkErrorException e) {
-					Log.w(TAG, e.getMessage());
-				}
+	    	   PusherConnectionManager pusherConnectionManager = new PusherConnectionManager(ctx, mPusher, PusherConnectionManager.MODE_CONNECT, TAG);
+	    	   pusherConnectionManager.run();
 	    	}
 	    } 
 	    
 	    else if(networkInfo != null && networkInfo.getType() == ConnectivityManager.TYPE_MOBILE){
 	    	Log.d(TAG, "Mobile Connection");
 	    	if(mPusherState == ConnectionState.DISCONNECTED){
-	    		try {
-	    			Log.i(TAG, "Trying to reconnect to Pusher");
-					PusherConnectionManager.prepare(ctx, mPusher, 2, TAG);
-				} catch (NetworkErrorException e) {
-					Log.w(TAG, e.getMessage());
-				}
+	    		PusherConnectionManager pusherConnectionManager = new PusherConnectionManager(ctx, mPusher, PusherConnectionManager.MODE_CONNECT, TAG);
+				pusherConnectionManager.run();
 	    	}
 	    	
 	    } 
