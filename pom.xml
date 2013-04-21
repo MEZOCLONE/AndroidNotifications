@@ -5,10 +5,25 @@
  http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.matt.remotenotifier</groupId>
-	<artifactId>RemoteNotifier</artifactId>
-	<version>1</version>
+	<artifactId>RemoteNotifier-WIP</artifactId>
+	<version>0.3</version>
 	<packaging>apk</packaging>
 	<name>Remote Notifier</name>
+
+	<repositories>
+		<repository>
+			<id>pusher-java-client-mvn-repo</id>
+			<name>Pusher Java Client Library</name>
+			<url>https://raw.github.com/leggetter/pusher-java-client/mvn-repo/</url>
+			<!-- Update the following as required -->
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -22,14 +37,28 @@
 			<artifactId>support-v4</artifactId>
 			<version>r6</version>
 		</dependency>
+		<dependency>
+			<groupId>com.pusher</groupId>
+			<artifactId>pusher-java-client</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
 		<!--dependency>
 			<groupId>com.jayway.android.robotium</groupId>
 			<artifactId>robotium-solo</artifactId>
 			<version>4.0</version>
 		</dependency-->
 	</dependencies>
+
 	<build>
 		<sourceDirectory>src</sourceDirectory>
+		<testSourceDirectory>test</testSourceDirectory>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -52,6 +81,11 @@
 						<platform>16</platform>
 					</sdk>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-report-plugin</artifactId>
+				<version>2.14.1</version>
 			</plugin>
 		</plugins>
 	</build>
