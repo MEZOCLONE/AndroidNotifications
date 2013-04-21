@@ -1,16 +1,15 @@
 package com.matt.remotenotifier;
 
-import com.matt.pusher.PusherConnectionManager;
-import com.pusher.client.Pusher;
-import com.pusher.client.connection.ConnectionState;
-
-import android.accounts.NetworkErrorException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
+
+import com.matt.pusher.PusherConnectionManager;
+import com.pusher.client.Pusher;
+import com.pusher.client.connection.ConnectionState;
 
 public class NetworkManager extends BroadcastReceiver {
 	private static String TAG = "NetworkManager";

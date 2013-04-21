@@ -11,7 +11,7 @@ import android.widget.EditText;
 import com.matt.remotenotifier.R.id;
 
 public class SetPreferences extends Activity {
-	private static String TAG = "RemoteNotifier.SetPreferences";
+	private static String TAG = "SetPreferences";
 
 	// TODO Fix layout issues now basic functions are there (make it look
 	// pretty?)

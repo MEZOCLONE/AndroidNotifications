@@ -5,7 +5,6 @@ import java.io.NotActiveException;
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.graphics.Color;
-import android.opengl.Visibility;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.graphics.Color;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,7 +16,7 @@ import android.widget.TextView;
 
 class IncomingNotificationAdaptor extends BaseAdapter {
 
-	private static String TAG = "IncomingNotifAdaptor";
+	//private static String TAG = "IncomingNotifAdaptor";
 	private ArrayList<EventHolder> eventList = new ArrayList<EventHolder>();
 	private LayoutInflater mInflater;
 	private Context ctx;
@@ -81,9 +80,6 @@ class IncomingNotificationAdaptor extends BaseAdapter {
 
 	public View getView(int position, View convertView, ViewGroup parent) {
 		ViewHolder view = null;
-		int type = getItemViewType(position);
-		//Log.d(TAG, "getView " + position + " " + convertView + " type = "
-		//		+ type);
 		if (convertView == null) {
 			view = new ViewHolder();
 			convertView = mInflater.inflate(R.layout.list_layout_incoming, parent, false);
