@@ -6,7 +6,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.matt.remotenotifier</groupId>
 	<artifactId>RemoteNotifier-WIP</artifactId>
+<<<<<<< HEAD
 	<version>1</version>
+=======
+	<version>0.3</version>
+>>>>>>> Wip
 	<packaging>apk</packaging>
 	<name>Remote Notifier</name>
 
@@ -53,6 +57,7 @@
 			<groupId>com.pusher</groupId>
 			<artifactId>pusher-java-client</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
+<<<<<<< HEAD
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -60,6 +65,15 @@
 			<artifactId>gson</artifactId>
 			<version>2.2.2</version>
 			<scope>compile</scope>
+=======
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+>>>>>>> Wip
 		</dependency>
 		<!--dependency>
 			<groupId>com.jayway.android.robotium</groupId>
@@ -71,7 +85,10 @@
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<testSourceDirectory>test</testSourceDirectory>
+<<<<<<< HEAD
 		<finalName>${project.artifactId}-${project.version}</finalName>
+=======
+>>>>>>> Wip
 		<pluginManagement>
 			<plugins>
 				<plugin>
