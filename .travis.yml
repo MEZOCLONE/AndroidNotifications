@@ -1,10 +1,5 @@
 language: java
 jdk: oraclejdk7
-
-# whitelist
-branches:
- only:
-  - master
 env:
     matrix:
    # - ANDROID_SDKS=android-8            ANDROID_TARGET=android-8   ANDROID_ABI=armeabi
@@ -33,8 +28,3 @@ before_script:
     - ./wait_for_emulator
 
 script: mvn clean install
-
-after_success:
- - chmod 777 ./uploadArtifact.sh
- - chmod 777 ./dropbox_uploader.sh
- -./uploadArtifact.sh
