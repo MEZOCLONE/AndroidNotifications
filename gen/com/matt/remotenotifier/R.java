@@ -57,6 +57,7 @@ public final class R {
         public static final int inFragmentHolder=0x7f080014;
         public static final int incomingNotifTitle=0x7f080002;
         public static final int itemClearAll=0x7f08001d;
+        public static final int itemConnect=0x7f08001f;
         public static final int itemDisconnect=0x7f08001b;
         public static final int itemReconnect=0x7f08001c;
         public static final int itemRequestDevices=0x7f08001e;
