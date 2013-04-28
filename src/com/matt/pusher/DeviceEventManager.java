@@ -15,6 +15,12 @@ import com.matt.remotenotifier.R;
 import com.pusher.client.channel.PrivateChannelEventListener;
 
 // Maybe in the future I could use Gson to deserialize the Json straight to the DeviceHolder object. But that's for another time...
+/**
+ * Management class to handle Device Events on the Private channel. This should be pre-registered with the {@link ChannelEventCoordinator}. 
+ * Failure to do this may lead to missed events.  
+ * @author mattm
+ *
+ */
 public class DeviceEventManager implements PrivateChannelEventListener  {
 
 	private static final String TAG = "RegisterDeviceEventHandler";

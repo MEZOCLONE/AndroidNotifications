@@ -13,6 +13,12 @@ import com.matt.remotenotifier.JobCoordinator;
 import com.matt.remotenotifier.R;
 import com.pusher.client.channel.PrivateChannelEventListener;
 
+/**
+ * Management class to handle Job Events on the Private channel. This should be pre-registered with the {@link ChannelEventCoordinator}. 
+ * Failure to do this may lead to missed events.  
+ * @author mattm
+ *
+ */
 public class JobEventManager implements PrivateChannelEventListener {
 	
 	private static final String TAG = "JobEventManager";

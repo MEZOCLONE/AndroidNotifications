@@ -16,13 +16,23 @@ import com.matt.remotenotifier.R;
 import com.pusher.client.channel.PrivateChannel;
 import com.pusher.client.channel.PrivateChannelEventListener;
 
+/**
+ * Class to coordinate all the events that could happen on the private channel. 
+ * New events need to be pre-registered with this class, otherwise they are ignored. 
+ * 
+ * It will also deal with triggering events on the private channel
+ * Multiple private channels are supported. 
+ * 
+ * @author mattm
+ *
+ */
 public class ChannelEventCoordinator implements PrivateChannelEventListener {
 	private IncomingFragment incomingFragment;
 	private DeviceCoordinator deviceCoordinator;
 	private ArrayList<PrivateChannel> channelList;
 	private ArrayList<String> eventBindList;
 	private Context ctx;
-	private static String TAG = "ChannelEventManager";
+	private static String TAG = "ChannelEventCoordinator";
 	private static ChannelEventCoordinator instance;
 
 	/**
@@ -131,7 +141,7 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 	}
 	
 	public void trigger(int channelId, String eventName, String data) throws Exception{
-		Log.d(TAG, "Request to trigger event ["+eventName+"] on channel ["+channelList.get(channelId)+"]");
+		Log.d(TAG, "Request to trigger event ["+eventName+"] on channel "+channelList.get(channelId));
 		channelList.get(channelId).trigger(eventName, data);
 		
 	}

@@ -2,11 +2,13 @@ package com.matt.remotenotifier;
 
 import java.util.ArrayList;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -93,7 +95,7 @@ public class IncomingFragment extends ListFragment {
 		try{
 			progressBar.setVisibility(View.GONE);
 		}catch(Exception e){
-			Log.e(TAG, "Error hiding progress bar on connect", e);
+			Log.e(TAG, "Error hiding progress bar on connect");
 		}
 	}
 	
@@ -115,5 +117,9 @@ public class IncomingFragment extends ListFragment {
 	
 	public void restoreEventList(ArrayList<EventHolder> eventList){
 		mAdaptor.restoreEventList(eventList);
+	}
+	
+	public FragmentActivity getFragmentActivity(){
+		return getActivity();
 	}
 }

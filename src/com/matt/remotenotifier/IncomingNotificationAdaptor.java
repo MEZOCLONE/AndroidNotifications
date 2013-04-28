@@ -2,6 +2,7 @@ package com.matt.remotenotifier;
 
 import java.util.ArrayList;
 
+import android.app.Notification;
 import android.content.Context;
 import android.graphics.Color;
 import android.text.format.DateUtils;

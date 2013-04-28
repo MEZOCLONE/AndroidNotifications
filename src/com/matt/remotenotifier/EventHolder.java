@@ -77,6 +77,38 @@ public class EventHolder implements Serializable {
 	public void setIconResource(int iconResource) {
 		this.iconResource = iconResource;
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((textMain == null) ? 0 : textMain.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		EventHolder other = (EventHolder) obj;
+		if (textMain == null) {
+			if (other.textMain != null)
+				return false;
+		} else if (!textMain.equals(other.textMain))
+			return false;
+		return true;
+	}
 	
 
 }

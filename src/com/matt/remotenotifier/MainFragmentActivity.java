@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
@@ -24,13 +25,14 @@ import android.widget.Toast;
 import com.matt.pusher.ChannelEventCoordinator;
 import com.matt.pusher.ConnectionEventManager;
 import com.matt.pusher.PusherConnectionManager;
+import com.matt.remotenotifier.AppKeyFragment.AppKeyDialogListener;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.PrivateChannel;
 import com.pusher.client.connection.ConnectionState;
 import com.pusher.client.util.HttpAuthorizer;
 
-public class MainFragmentActivity extends FragmentActivity {
+public class MainFragmentActivity extends FragmentActivity implements AppKeyDialogListener {
 	private static String TAG = "MainFragment";
 	private Pusher mPusher;
 	private AppPreferences appPrefs;
@@ -65,26 +67,19 @@ public class MainFragmentActivity extends FragmentActivity {
 		
 		appPrefs = new AppPreferences(getApplicationContext());
 		
-		if (appPrefs.getKey() == null) {
+		if (appPrefs.getKey() == null || appPrefs.getKey() == "") {
 			try {
-				Intent i = new Intent("com.matt.remotenotifier.SetPreferences");
-				startActivityForResult(i, 1);
+				Log.w(TAG, "Need to get an application key");
+				DialogFragment dialogFragmentAppKey = new AppKeyFragment();
+				dialogFragmentAppKey.show(getSupportFragmentManager(), "dialogFragmentAppKey");
 			} catch (Exception e) {
 				Log.d(TAG, e.getLocalizedMessage());
 			}
-		}
-		
-		// Create a new connection to Pusher.
-		HttpAuthorizer auth = new HttpAuthorizer("http://mansion.entrydns.org:8080/");
-		PusherOptions opts = new PusherOptions().setAuthorizer(auth);
-		mPusher = new Pusher(appPrefs.getKey(), opts);
-				
-		try {
-			jobCoordinator.restoreJobHolderList(appPrefs.getJobStore());
-		} catch (NotActiveException e) {
-			Log.w(TAG, "Error on JobStore restore", e);
-		} catch (Exception e) {
-			Log.w(TAG, "First time. Restore was null.");
+		}else{
+			// Create a new connection to Pusher.
+			HttpAuthorizer auth = new HttpAuthorizer("http://mansion.entrydns.org:8080/");
+			PusherOptions opts = new PusherOptions().setAuthorizer(auth);
+			mPusher = new Pusher(appPrefs.getKey(), opts);
 		}
 		
 		if(savedInstanceState != null){
@@ -131,14 +126,14 @@ public class MainFragmentActivity extends FragmentActivity {
 		});
 		updateIncomingList.start();
 		
-		connectionEventManager = new ConnectionEventManager(getApplicationContext(), mPusher);
-		PusherConnectionManager pcm = new PusherConnectionManager(getApplicationContext(), mPusher, PusherConnectionManager.MODE_CONNECT_NEW_MANAGER, connectionEventManager, TAG);
-		pcm.run();
-		
-		Log.d(TAG, "Registering PusherNetworkReceiver intent");
-		IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        receiver = new NetworkManager(mPusher);
-        this.registerReceiver(receiver, filter);
+		if(mPusher != null){
+			connectionEventManager = new ConnectionEventManager(getApplicationContext(), mPusher);
+			PusherConnectionManager pcm = new PusherConnectionManager(getApplicationContext(), mPusher, PusherConnectionManager.MODE_CONNECT_NEW_MANAGER, connectionEventManager, TAG);
+			pcm.run();
+			registerNetworkBroadcastReceiver();
+		}
+        
+        Log.d(TAG, "Main Fragment Created");
 	}
 	
 	@Override
@@ -150,11 +145,18 @@ public class MainFragmentActivity extends FragmentActivity {
 			jobCoordinator = JobCoordinator.getInstance(this);
 			
 			channelEventCoordinator = ChannelEventCoordinator.getInstance(incomingFragment, this);
-			PrivateChannel pChannel = mPusher.subscribePrivate(PRIVATE_CHANNEL, channelEventCoordinator);
-			channelEventCoordinator.assignChannelToCoordinator(pChannel);
+			if(mPusher != null){
+				PrivateChannel pChannel = mPusher.subscribePrivate(PRIVATE_CHANNEL, channelEventCoordinator);
+				channelEventCoordinator.assignChannelToCoordinator(pChannel);
+			}
 			
+			Log.d(TAG, "Attempting to restore jobHolders");
+			jobCoordinator.restoreJobHolderList(appPrefs.getJobStore());
+			
+		} catch (NotActiveException e) {
+			Log.w(TAG, "Error on JobStore restore", e);
 		} catch (Exception e) {
-			Log.w(TAG, e.getMessage());
+			Log.w(TAG, "Could not restore jobHolders", e);
 		}
 	}
 	
@@ -178,6 +180,31 @@ public class MainFragmentActivity extends FragmentActivity {
 			} catch (Exception e) {
 				Log.d(TAG, e.getMessage());
 			}
+		case R.id.itemConnect:
+			if (appPrefs.getKey() == null || appPrefs.getKey() == "") {
+				try {
+					Log.w(TAG, "Need to get an application key");
+					DialogFragment dialogFragmentAppKey = new AppKeyFragment();
+					dialogFragmentAppKey.show(getSupportFragmentManager(), "dialogFragmentAppKey");
+				} catch (Exception e) {
+					Log.d(TAG, e.getLocalizedMessage());
+				}
+			}else{
+				// Create a new connection to Pusher.
+				HttpAuthorizer auth = new HttpAuthorizer("http://mansion.entrydns.org:8080/");
+				PusherOptions opts = new PusherOptions().setAuthorizer(auth);
+				mPusher = new Pusher(appPrefs.getKey(), opts);
+				
+				connectionEventManager = new ConnectionEventManager(getApplicationContext(), mPusher);
+				PusherConnectionManager pcm = new PusherConnectionManager(getApplicationContext(), mPusher, PusherConnectionManager.MODE_CONNECT_NEW_MANAGER, connectionEventManager, TAG);
+				pcm.run();
+				registerNetworkBroadcastReceiver();
+				
+				PrivateChannel pChannel = mPusher.subscribePrivate(PRIVATE_CHANNEL, channelEventCoordinator);
+				channelEventCoordinator.assignChannelToCoordinator(pChannel);
+			}			
+			return true;			
+			
 		case R.id.itemDisconnect:
 			pusherConnectionManager = new PusherConnectionManager(this, mPusher, PusherConnectionManager.MODE_CONNECT, TAG);
 			pusherConnectionManager.run();
@@ -251,25 +278,50 @@ public class MainFragmentActivity extends FragmentActivity {
 			Log.e(TAG, "Coordinator not active at time of pause", e);
 		}
 	}
+	
+	private void registerNetworkBroadcastReceiver(){
+		if(receiver == null && mPusher != null){
+			Log.d(TAG, "Registering PusherNetworkReceiver intent");
+			IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+	        receiver = new NetworkManager(mPusher);
+	        this.registerReceiver(receiver, filter);
+		}else{
+			Log.e(TAG, "Broadcast reciever already registered or Pusher instance not found");
+		}
+	}
+	
+	private void unregisterNetworkBroadcastReciever(){
+		Log.d(TAG, "Unregistering PusherNetworkReceiver intent");
+		if(receiver != null){
+			Log.d(TAG, "Unregistering Network Broadcast Reveiver");
+			this.unregisterReceiver(receiver);
+			receiver = null;
+		}
+	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 		try{
-			if(receiver != null){
-				Log.d(TAG, "Unregistering Network Broadcast Reveiver");
-				this.unregisterReceiver(receiver);
-			}
+			unregisterNetworkBroadcastReciever();
 			jobCoordinator.shutdown(appPrefs);
 			deviceCoordinator.shutdown();
-			
-			Log.d(TAG, "Unbinding connectionEventManager");
-			mPusher.getConnection().unbind(ConnectionState.ALL, connectionEventManager);
-			PusherConnectionManager pcm = new PusherConnectionManager(getApplicationContext(), mPusher, PusherConnectionManager.MODE_DISCONNECT, TAG);
-			pcm.run();
+			if(mPusher != null){
+				Log.d(TAG, "Unbinding connectionEventManager");
+				mPusher.getConnection().unbind(ConnectionState.ALL, connectionEventManager);
+				PusherConnectionManager pcm = new PusherConnectionManager(getApplicationContext(), mPusher, PusherConnectionManager.MODE_UNSUBSCRIBE, PRIVATE_CHANNEL, TAG);
+				pcm.run();
+				pcm = new PusherConnectionManager(getApplicationContext(), mPusher, PusherConnectionManager.MODE_DISCONNECT, TAG);
+				pcm.run();
+			}
 		}catch(NotActiveException e){
 			Log.e(TAG, "Error on coordinator shutdown()", e);
 		}		
 		Log.i(TAG, "RemoteNotifier Destroyed");
+	}
+
+	@Override
+	public void onFinishAppKeyDialog(String inputText) {
+		appPrefs.setKey(inputText);		
 	}
 }

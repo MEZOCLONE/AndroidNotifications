@@ -15,7 +15,10 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-
+/**
+ * This is used as abstraction layer between the Coordinators and the list of devices. 
+ * It will handle showing what job is up next, refreshing the list and those sorts of things. 
+ */
 public class ExpandListAdapter extends BaseExpandableListAdapter  {
 	private static final String TAG = "ExpandListAdapter";
 	private LayoutInflater mInflater;

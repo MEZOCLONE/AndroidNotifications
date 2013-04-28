@@ -4,4 +4,5 @@
     <item android:id="@+id/itemReconnect" android:title="Reconnect" android:icon="@android:drawable/ic_menu_agenda" android:orderInCategory="1"/> 
     <item android:id="@+id/itemClearAll" android:title="Clear All" android:icon="@android:drawable/ic_menu_delete" android:orderInCategory="4"/>
     <item android:id="@+id/itemRequestDevices" android:title="Request devices" android:icon="@android:drawable/ic_menu_myplaces" android:orderInCategory="2"/>
+    <item android:id="@+id/itemConnect" android:title="Connect" android:orderInCategory="5"></item>
 </menu>

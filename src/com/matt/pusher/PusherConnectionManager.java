@@ -6,8 +6,14 @@ import android.util.Log;
 import com.matt.remotenotifier.NetworkManager;
 import com.pusher.client.Pusher;
 
+/**
+ * Manager to handle the connection to Pusher. This can be configured in advance, then run() called at a later time.
+ * @author mattm
+ *
+ */
 public class PusherConnectionManager implements Runnable{
 	private String TAG = "PusherConnectionManager";
+	private String channelName;
 	private Pusher mPusher;
 	private int runMode;
 	private ConnectionEventManager connectionEventManager;
@@ -16,6 +22,7 @@ public class PusherConnectionManager implements Runnable{
 	public static int MODE_CONNECT_NEW_MANAGER = 0;
 	public static int MODE_DISCONNECT = 1;
 	public static int MODE_CONNECT = 2;
+	public static int MODE_UNSUBSCRIBE = 3;
 	
 	public PusherConnectionManager(Context ctx, Pusher mPusher, int runMode, String TAG) throws IllegalStateException{
 		
@@ -32,8 +39,8 @@ public class PusherConnectionManager implements Runnable{
 	
 	public PusherConnectionManager(Context ctx, Pusher mPusher, int runMode, ConnectionEventManager connectionEventManager, String TAG) {
 		
-		if(runMode == 0){
-			Log.w(TAG, "Run mode 0 requested but not ConnectionEventManager supplied. Running with runMode 2");
+		if(runMode == 0 && connectionEventManager == null){
+			Log.w(TAG, "Run mode 0 requested but ConnectionEventManager supplied was null. Running with runMode 2");
 			this.runMode = 2;
 		}else{
 			this.runMode = runMode;
@@ -45,6 +52,21 @@ public class PusherConnectionManager implements Runnable{
 		
 		Log.d(TAG, "PusherConnectionThread called from "+TAG+". Using runMode ["+runMode+"]");
 	}
+	
+	public PusherConnectionManager(Context ctx, Pusher mPusher, int runMode, String channelName, String TAG) throws IllegalArgumentException {
+		
+		if(runMode != 3){
+			throw new IllegalArgumentException("Only Unsubscribe allowed with this constructor");
+		}
+		
+		this.ctx = ctx;
+		this.mPusher = mPusher;
+		this.channelName = channelName;
+		
+		Log.d(TAG, "PusherConnectionThread called from "+TAG+". Using runMode ["+runMode+"]");
+	}
+	
+	
 	
 	@Override
 	public void run() {
@@ -61,6 +83,10 @@ public class PusherConnectionManager implements Runnable{
 			
 			case 2:
 				mPusher.connect();
+				break;
+			
+			case 3:
+				mPusher.unsubscribe(channelName);
 				break;
 				
 			default: 

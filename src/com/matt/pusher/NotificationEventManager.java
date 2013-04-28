@@ -1,25 +1,37 @@
 package com.matt.pusher;
 
 import java.io.NotActiveException;
+import java.util.ArrayList;
 
 import org.json.JSONObject;
 
+import android.app.Notification;
 import android.util.Log;
 
+import com.matt.remotenotifier.BaseNotificationBuilder;
 import com.matt.remotenotifier.DeviceCoordinator;
 import com.matt.remotenotifier.DeviceType;
 import com.matt.remotenotifier.IncomingFragment;
 import com.matt.remotenotifier.R;
 import com.pusher.client.channel.PrivateChannelEventListener;
 
+/**
+ * Management class to handle Notification Events on the Private channel. This should be pre-registered with the {@link ChannelEventCoordinator}. 
+ * Failure to do this may lead to missed events.  
+ * @author mattm
+ *
+ */
 public class NotificationEventManager implements PrivateChannelEventListener {
 	
 	private static final String TAG = "NotificationEventManager";
 	private IncomingFragment incomingFragment;
 	private DeviceCoordinator deviceCoordinator;
+	private ArrayList<NotificationEventHolder> notificationEventHolderList;
 
 	public NotificationEventManager(IncomingFragment incomingFragment) {
 		this.incomingFragment = incomingFragment;
+		notificationEventHolderList = new ArrayList<NotificationEventHolder>();
+		
 		Log.i(TAG, "NotificationEventManager started okay");
 	}
 	
@@ -59,6 +71,37 @@ public class NotificationEventManager implements PrivateChannelEventListener {
 					Log.d(TAG, "Message: ["+mainText+"] ["+subText+"]");
 					Long now = System.currentTimeMillis();
 					addItemToNotificationView("["+deviceName+"] "+mainText, subText, R.color.haloLightGreen, 255, now);
+									
+					// Does the user care about notifications?
+					// TODO: Add to user prefs
+					if(true){
+						// TODO: This should use the Event Object used by the notification list. 
+						// It needs to be exposed through the manager, but for the moment, do this.
+						BaseNotificationBuilder notificationBuilder = new BaseNotificationBuilder(incomingFragment.getActivity());
+						NotificationEventHolder neh = new NotificationEventHolder(mainText);
+						if(!notificationEventHolderList.contains(neh)){												
+							Log.d(TAG, "Building Notification for this event");
+							Notification.Builder nBuilder = notificationBuilder.buildNotification("["+deviceName+"] "+mainText, subText);
+							neh.setmBuilder(nBuilder);
+							neh.setSubText(subText);
+							
+							Log.d(TAG, "Quietly stashing EventTitle");
+							notificationEventHolderList.add(neh);
+							notificationBuilder.showNotification(notificationEventHolderList.indexOf(neh), nBuilder);
+						}else{
+							Log.d(TAG, "Getting Notification.Builder object to update");
+							
+							int index = notificationEventHolderList.indexOf(neh);
+							neh = notificationEventHolderList.get(index);
+							Notification.Builder nBuilder = neh.getmBuilder();
+							Notification.Builder newNBuilder = notificationBuilder.updateNotification(nBuilder, neh.getmTitle(), neh.getNum(), subText, neh.getSubText());
+							neh.updateNum();
+							neh.setmBuilder(newNBuilder);
+							neh.setSubText(subText);
+							
+							notificationBuilder.showNotification(index, newNBuilder);
+						}
+					}
 				}
 			}
 		}catch(Exception e){
@@ -86,6 +129,98 @@ public class NotificationEventManager implements PrivateChannelEventListener {
 				incomingFragment.notifyDataSetChanged();
 			}
 		});
+	}
+	
+	class NotificationEventHolder{
+		private String mTitle;
+		private String subText;
+		private Notification.Builder mBuilder;
+		int num;
+		
+		public NotificationEventHolder(String mTitle) {
+			//this.mBuilder = mBuilder;
+			this.mTitle = mTitle;
+			num = 1;
+		}
+		
+		public void setmBuilder(Notification.Builder mBuilder){
+			this.mBuilder = mBuilder;
+		}
+
+		/**
+		 * @return the mTitle
+		 */
+		public String getmTitle() {
+			return mTitle;
+		}
+
+		/**
+		 * @return the mBuilder
+		 */
+		public Notification.Builder getmBuilder() {
+			return mBuilder;
+		}
+		
+		public int getNum(){
+			return num;
+		}
+		
+		public void updateNum(){
+			num++;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + getOuterType().hashCode();
+			result = prime * result
+					+ ((mTitle == null) ? 0 : mTitle.hashCode());
+			return result;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			NotificationEventHolder other = (NotificationEventHolder) obj;
+			if (!getOuterType().equals(other.getOuterType()))
+				return false;
+			if (mTitle == null) {
+				if (other.mTitle != null)
+					return false;
+			} else if (!mTitle.equals(other.mTitle))
+				return false;
+			return true;
+		}
+
+		private NotificationEventManager getOuterType() {
+			return NotificationEventManager.this;
+		}
+
+		/**
+		 * @return the subText
+		 */
+		public String getSubText() {
+			return subText;
+		}
+
+		/**
+		 * @param subText the subText to set
+		 */
+		public void setSubText(String subText) {
+			this.subText = subText;
+		}
 	}
 	
 }

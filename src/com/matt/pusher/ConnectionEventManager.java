@@ -9,6 +9,11 @@ import com.pusher.client.connection.ConnectionEventListener;
 import com.pusher.client.connection.ConnectionState;
 import com.pusher.client.connection.ConnectionStateChange;
 
+/**
+ * Management class for handling events that happen on the connection to Pusher
+ * @author mattm
+ *
+ */
 public class ConnectionEventManager implements ConnectionEventListener {
 
 	private Context ctx;
