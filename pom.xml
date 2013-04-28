@@ -5,12 +5,17 @@
  http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.matt.remotenotifier</groupId>
+<<<<<<< HEAD
 	<artifactId>RemoteNotifier-WIP</artifactId>
 <<<<<<< HEAD
 	<version>1</version>
 =======
 	<version>0.3</version>
 >>>>>>> Wip
+=======
+	<artifactId>RemoteNotifier-Master</artifactId>
+	<version>0.5</version>
+>>>>>>> 8e6fd95f44744e7ef80b6a81d48aef4612e22e7c
 	<packaging>apk</packaging>
 	<name>Remote Notifier</name>
 
@@ -48,6 +53,7 @@
 			<version>r6</version>
 		</dependency>
 		<dependency>
+<<<<<<< HEAD
 			<groupId>com.google.android</groupId>
 			<artifactId>android-test</artifactId>
 			<version>2.2.1</version>
@@ -66,6 +72,11 @@
 			<version>2.2.2</version>
 			<scope>compile</scope>
 =======
+=======
+			<groupId>com.pusher</groupId>
+			<artifactId>pusher-java-client</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+>>>>>>> 8e6fd95f44744e7ef80b6a81d48aef4612e22e7c
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -73,7 +84,10 @@
 			<artifactId>junit</artifactId>
 			<version>3.8.1</version>
 			<scope>test</scope>
+<<<<<<< HEAD
 >>>>>>> Wip
+=======
+>>>>>>> 8e6fd95f44744e7ef80b6a81d48aef4612e22e7c
 		</dependency>
 		<!--dependency>
 			<groupId>com.jayway.android.robotium</groupId>
@@ -86,9 +100,12 @@
 		<sourceDirectory>src</sourceDirectory>
 		<testSourceDirectory>test</testSourceDirectory>
 <<<<<<< HEAD
+<<<<<<< HEAD
 		<finalName>${project.artifactId}-${project.version}</finalName>
 =======
 >>>>>>> Wip
+=======
+>>>>>>> 8e6fd95f44744e7ef80b6a81d48aef4612e22e7c
 		<pluginManagement>
 			<plugins>
 				<plugin>
