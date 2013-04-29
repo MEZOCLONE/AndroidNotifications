@@ -11,7 +11,6 @@ tmp/
 *.bak
 *.swp
 *~.nib
-local.properties
 .classpath
 .settings/
 .loadpath
@@ -27,6 +26,14 @@ local.properties
 
 # PDT-specific
 .buildpath
+
+gen/
+
+#################
+## ANT
+#################
+
+local.properties
 
 
 #################

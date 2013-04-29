@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.matt.remotenotifier"
     android:versionCode="1"
-    android:versionName="0.06wipNewPusher" android:installLocation="auto">
+    android:versionName="0.06wip" android:installLocation="auto">
 
     <uses-sdk
         android:minSdkVersion="16"
