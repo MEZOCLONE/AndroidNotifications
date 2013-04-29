@@ -4,9 +4,9 @@ import com.matt.remotenotifier.MainFragmentActivity;
 
 import android.test.ActivityInstrumentationTestCase2;
 
-public class SanityCheckTest extends ActivityInstrumentationTestCase2<MainFragmentActivity> {
+public class MainFragmentActivityTest extends ActivityInstrumentationTestCase2<MainFragmentActivity> {
 
-	public SanityCheckTest(Class<MainFragmentActivity> activityClass) {
+	public MainFragmentActivityTest(Class<MainFragmentActivity> activityClass) {
 		super(activityClass);
 	}
 	
