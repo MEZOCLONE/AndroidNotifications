@@ -13,5 +13,9 @@ public class SanityCheck extends ActivityInstrumentationTestCase2<MainFragmentAc
 	public void testSanity(){
 		assertEquals(2, 1 + 1);
 	}
+	
+	public void testSanity2(){
+		assertEquals(4, 2 + 2);
+	}
 
 }
