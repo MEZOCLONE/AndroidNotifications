@@ -26,7 +26,6 @@ public class IncomingFragment extends ListFragment {
 	
 	private static String TAG = "IncomingFragment";
 	private IncomingNotificationAdaptor mAdaptor;
-	public ProgressBar progressBar;
 	public TextView connectionMessage;
 
 	@Override
@@ -41,10 +40,7 @@ public class IncomingFragment extends ListFragment {
 		super.onActivityCreated(savedInstanceState);
 		
 		final Vibrator vibe = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
-		Log.d(TAG, "Created Incoming Fragment");
-		
-		progressBar = (ProgressBar) getView().findViewById(R.id.progressBar);
-		
+			
 		mAdaptor = new IncomingNotificationAdaptor(getActivity().getApplicationContext());
 		setListAdapter(mAdaptor);
 
@@ -81,10 +77,13 @@ public class IncomingFragment extends ListFragment {
 				return false;
 			}
 		});
+		
+		Log.d(TAG, "Created Incoming Fragment");
 	}
 	
 	public void showConnectionMessages(){
 		try{
+			ProgressBar progressBar = (ProgressBar) getView().findViewById(R.id.progressBar);
 			progressBar.setVisibility(View.VISIBLE);
 		}catch(Exception e){
 			Log.e(TAG, "Error showing progress bar on connect", e);
@@ -93,6 +92,7 @@ public class IncomingFragment extends ListFragment {
 	
 	public void hideConnectionMessages(){
 		try{
+			ProgressBar progressBar = (ProgressBar) getView().findViewById(R.id.progressBar);
 			progressBar.setVisibility(View.GONE);
 		}catch(Exception e){
 			Log.e(TAG, "Error hiding progress bar on connect");

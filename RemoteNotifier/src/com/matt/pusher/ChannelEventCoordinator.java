@@ -38,7 +38,7 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 	/*
 	 * Trigger event data statics
 	 */
-	public static final String REQUEST_ALL_NEW_DEVICE = "{requestedDeviceTypes: all, senderType: controller}";
+	public static final String REQUEST_ALL_NEW_DEVICE = "{requestedDevice: all, senderType: controller}";
 	public static final String REQUEST_ALL_HEARTBEAT = "{requestedDevice: all, senderType: controller}";
 	
 	

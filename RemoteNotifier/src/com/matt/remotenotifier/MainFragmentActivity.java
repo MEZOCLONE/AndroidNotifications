@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Intent;
@@ -72,6 +71,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 				Log.w(TAG, "Need to get an application key");
 				DialogFragment dialogFragmentAppKey = new AppKeyFragment();
 				dialogFragmentAppKey.show(getSupportFragmentManager(), "dialogFragmentAppKey");
+				incomingFragment.hideConnectionMessages();
 			} catch (Exception e) {
 				Log.d(TAG, e.getLocalizedMessage());
 			}
@@ -128,7 +128,6 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 		
 		if(mPusher != null){
 			connectionEventManager = new ConnectionEventManager(getApplicationContext(), mPusher);
-			incomingFragment.showConnectionMessages();
 			PusherConnectionManager pcm = new PusherConnectionManager(getApplicationContext(), mPusher, PusherConnectionManager.MODE_CONNECT_NEW_MANAGER, connectionEventManager, TAG);
 			pcm.run();
 			registerNetworkBroadcastReceiver();
@@ -192,6 +191,8 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 				}
 			}else{
 				try{
+					Log.d(TAG, "User invoked connect: Attempting connect");
+					
 					// Create a new connection to Pusher.
 					incomingFragment.showConnectionMessages();
 					
@@ -216,6 +217,8 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 			
 		case R.id.itemDisconnect:
 			try{
+				// TODO When a disconnect is requested by the user, we shouldn't try to reconnect in the ConnectionEventManager ;)
+				Log.d(TAG, "User invoked disconnect: Attempting disconnect");
 				pusherConnectionManager = new PusherConnectionManager(this, mPusher, PusherConnectionManager.MODE_DISCONNECT, TAG);
 				pusherConnectionManager.run();
 				incomingFragment.addItem("Disconnected from Pusher Service","", R.color.haloDarkRed, 255, now);
@@ -227,6 +230,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 			
 		case R.id.itemReconnect:
 			try{
+				Log.d(TAG, "User invoked reconnect: Attempting reconnect");
 				pusherConnectionManager = new PusherConnectionManager(this, mPusher, PusherConnectionManager.MODE_DISCONNECT, TAG);
 				pusherConnectionManager.run();
 				
@@ -249,7 +253,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 				Log.d(TAG, e.getMessage());
 			}
 			
-		case R.id.itemRequestDevices:
+		case R.id.itemSearchForDevices:
 			Thread pusherPollDevicesManual = new Thread(new Runnable() {
 				JSONObject jObject = null;
 				@Override
@@ -264,7 +268,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							incomingFragment.addItem("Manual poll for devices started","",R.color.haloLightPurple, 255, now);
+							incomingFragment.addItem("Searching for Devices...","",R.color.haloLightPurple, 255, now);
 						}
 					});
 				}

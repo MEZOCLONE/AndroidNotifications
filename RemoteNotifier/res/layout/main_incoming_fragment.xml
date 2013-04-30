@@ -48,6 +48,6 @@
         android:indeterminate="true"
         android:minHeight="10dp"
         android:paddingTop="12dp"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
 </RelativeLayout>
