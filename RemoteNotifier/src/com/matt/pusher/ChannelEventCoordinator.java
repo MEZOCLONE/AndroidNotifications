@@ -35,6 +35,22 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 	private static String TAG = "ChannelEventCoordinator";
 	private static ChannelEventCoordinator instance;
 
+	/*
+	 * Trigger event data statics
+	 */
+	public static final String REQUEST_ALL_NEW_DEVICE = "{requestedDeviceTypes: all, senderType: controller}";
+	public static final String REQUEST_ALL_HEARTBEAT = "{requestedDevice: all, senderType: controller}";
+	
+	
+	/*
+	 * Trigger event name statics
+	 */
+	public static final String EVENT_POLL_NEW_DEVICE = "client-device_poll_new";
+	public static final String EVENT_HEARTBEAT_REQUEST = "client-heartbeat_request";
+	public static final String EVENT_CANCEL_JOB = "client-cancel_job";
+	public static final String EVENT_EXECUTE_JOB = "client-execute_job";
+	public static final String EVENT_EXECUTE_TIMED_JOB = "client-execute_timed_job";
+
 	/**
 	 * Constructor for the ChannelEventManager
 	 * @param incomingFragment
@@ -142,8 +158,12 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 	
 	public void trigger(int channelId, String eventName, String data) throws Exception{
 		Log.d(TAG, "Request to trigger event ["+eventName+"] on channel "+channelList.get(channelId));
-		channelList.get(channelId).trigger(eventName, data);
-		
+		try{
+			channelList.get(channelId).trigger(eventName, data);
+		}catch(ArrayIndexOutOfBoundsException e){
+			Log.e(TAG, "ChannelId ["+channelId+"] does not exist or not assigned to this coordinator");
+			throw new Exception("Channel Not Found on this coordinator");
+		}
 	}
 	
 	private void addItemToNotificationView(final String main, final String sub, final int colourResourseId, final int alpha, final Long time){

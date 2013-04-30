@@ -14,17 +14,11 @@ import android.util.Log;
 public class DeviceHeartbeatTask extends AsyncTask<String, Integer, Long> {
 	
 	private static String TAG = "DeviceHeartbeatTask";
-	private JSONObject jObject;
 	private ChannelEventCoordinator cec;
 	private DeviceCoordinator deviceCoordinator;
 	
 	public DeviceHeartbeatTask(Context ctx){
-		try {
-			jObject = new JSONObject("{requestedDevice: all, senderType: controller}");
-			getDeviceCoodinatorInstance();
-		} catch (JSONException e) {
-			Log.e(TAG, "Error creating jObject", e);
-		}
+		getDeviceCoodinatorInstance();
 	}
 	
 	private void getChannelEventCoordinatorInstance(){
@@ -65,7 +59,7 @@ public class DeviceHeartbeatTask extends AsyncTask<String, Integer, Long> {
 					Log.i(TAG + " HeartbeatThread", "Requesting heatbeats");
 					getChannelEventCoordinatorInstance();
 					try{
-						cec.trigger(0, "client-heartbeat_request", jObject.toString());
+						cec.trigger(0, ChannelEventCoordinator.EVENT_HEARTBEAT_REQUEST, ChannelEventCoordinator.REQUEST_ALL_HEARTBEAT);
 						
 						synchronized (this) {
 							wait(HEARTBEAT_TIMEOUT);

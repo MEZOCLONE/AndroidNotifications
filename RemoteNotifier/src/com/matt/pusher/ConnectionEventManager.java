@@ -18,7 +18,7 @@ public class ConnectionEventManager implements ConnectionEventListener {
 
 	private Context ctx;
 	private Pusher mPusher;
-	private static final String TAG = "PusherConnectionEventListener";
+	private static final String TAG = "ConnectionEventManager";
 	private int connectionRetry  = 1;
 	private static int CONNECTION_RETRY_TIMEOUT = 4;
 	

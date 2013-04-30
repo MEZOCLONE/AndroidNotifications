@@ -2,9 +2,6 @@ package com.matt.remotenotifier;
 
 import java.io.NotActiveException;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -14,15 +11,10 @@ import com.matt.pusher.ChannelEventCoordinator;
 public class DeviceManagementTask extends AsyncTask<String, Integer, Long> {
 	
 	private static String TAG = "DeviceManagementTask";
-	private JSONObject jObject;
 	private ChannelEventCoordinator cec;
 	
 	public DeviceManagementTask(Context ctx){
-		try {
-			jObject = new JSONObject("{requestedDevice: all, senderType: controller}");
-		} catch (JSONException e) {
-			Log.e(TAG, "Error creating jObject", e);
-		}
+		
 	}
 	
 	private void getChannelEventCoordinatorInstance(){
@@ -53,7 +45,7 @@ public class DeviceManagementTask extends AsyncTask<String, Integer, Long> {
 				
 				try{
 					if(cec != null){
-						cec.trigger(0, "client-device_poll_new", jObject.toString());
+						cec.trigger(0, ChannelEventCoordinator.EVENT_POLL_NEW_DEVICE, ChannelEventCoordinator.REQUEST_ALL_NEW_DEVICE);
 					}
 				}catch(Exception e){
 					Log.e(TAG, e.getMessage());

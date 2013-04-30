@@ -17,6 +17,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.matt.pusher.ChannelEventCoordinator;
+import com.matt.pusher.ConnectionEventManager;
 
 /*
  * Singleton instance - Use getInstance
@@ -266,9 +267,9 @@ public class JobCoordinator {
 						try{
 							if(!jh.getRunDateTime().isEmpty()){
 								jObject.put("dateTime", jh.getRunDateTime());
-								cec.trigger(0, "client-execute_timed_job", jObject.toString());
+								cec.trigger(0, ChannelEventCoordinator.EVENT_EXECUTE_TIMED_JOB, jObject.toString());
 							}else{
-								cec.trigger(0, "client-execute_job", jObject.toString());
+								cec.trigger(0, ChannelEventCoordinator.EVENT_EXECUTE_JOB, jObject.toString());
 							}
 						}catch(Exception e){
 							Log.e(TAG, e.getMessage());
@@ -396,9 +397,9 @@ public class JobCoordinator {
 				if(jh != null){
 					try{
 						DeviceHolder dh = deviceCoordinator.getDeviceHolder(getJobHolder(jobId).getDeviceId());
-						JSONObject jObject = new JSONObject("{deviceName: "+dh.getDeviceName()+", deviceType: "+dh.getDeviceType().toString()+", jobId: "+jobId+"}");
+						String jobCancelEvent = "{deviceName: "+dh.getDeviceName()+", deviceType: "+dh.getDeviceType().toString()+", jobId: "+jobId+"}";
 						
-						cec.trigger(0, "client-cancel_job", jObject.toString());
+						cec.trigger(0, ChannelEventCoordinator.EVENT_CANCEL_JOB, jobCancelEvent);
 					}catch(Exception e){
 						Log.w(TAG, "Error creating JSON Object for failing job");
 					}
