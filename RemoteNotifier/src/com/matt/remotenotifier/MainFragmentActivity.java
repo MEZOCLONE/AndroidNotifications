@@ -87,17 +87,17 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 			if(!savedInstanceState.isEmpty()){
 				ArrayList<DeviceHolder> deviceList = (ArrayList<DeviceHolder>) savedInstanceState.getSerializable("deviceList");
 				ArrayList<JobHolder> jobList = (ArrayList<JobHolder>) savedInstanceState.getSerializable("jobList");
-				if((deviceList == null) || (jobList == null)){
-					Log.w(TAG, "SavedInstanceState was not null, but deviceList and jobList are...");					
-				}else{
-					try {
-						Log.i(TAG, "Expecting Device Coordinator active onRestore");
+				try {
+					if(deviceList != null){
+						Log.i(TAG, "Expecting Device Coordinator active onRestore of device list");
 						deviceCoordinator.restoreDeviceHolderList(deviceList);
-						Log.i(TAG, "Expecting Job Coordinator active onRestore");
-						jobCoordinator.restoreJobHolderList(jobList);
-					} catch (NotActiveException e) {
-						Log.w(TAG, "Coordinator not active at time of restore", e);
 					}
+					if(jobList != null){
+						Log.i(TAG, "Expecting Job Coordinator active onRestore of job list");
+						jobCoordinator.restoreJobHolderList(jobList);
+					}
+				} catch (NotActiveException e) {
+					Log.w(TAG, "Coordinator not active at time of restore", e);
 				}
 			}
 		}else{
@@ -128,6 +128,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 		
 		if(mPusher != null){
 			connectionEventManager = new ConnectionEventManager(getApplicationContext(), mPusher);
+			incomingFragment.showConnectionMessages();
 			PusherConnectionManager pcm = new PusherConnectionManager(getApplicationContext(), mPusher, PusherConnectionManager.MODE_CONNECT_NEW_MANAGER, connectionEventManager, TAG);
 			pcm.run();
 			registerNetworkBroadcastReceiver();
@@ -190,35 +191,53 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 					Log.d(TAG, e.getLocalizedMessage());
 				}
 			}else{
-				// Create a new connection to Pusher.
-				HttpAuthorizer auth = new HttpAuthorizer("http://mansion.entrydns.org:8080/");
-				PusherOptions opts = new PusherOptions().setAuthorizer(auth);
-				mPusher = new Pusher(appPrefs.getKey(), opts);
-				
-				connectionEventManager = new ConnectionEventManager(getApplicationContext(), mPusher);
-				PusherConnectionManager pcm = new PusherConnectionManager(getApplicationContext(), mPusher, PusherConnectionManager.MODE_CONNECT_NEW_MANAGER, connectionEventManager, TAG);
-				pcm.run();
-				registerNetworkBroadcastReceiver();
-				
-				PrivateChannel pChannel = mPusher.subscribePrivate(PRIVATE_CHANNEL, channelEventCoordinator);
-				channelEventCoordinator.assignChannelToCoordinator(pChannel);
+				try{
+					// Create a new connection to Pusher.
+					incomingFragment.showConnectionMessages();
+					
+					// TODO: Add this as a preference (Auth Sever)
+					HttpAuthorizer auth = new HttpAuthorizer("http://mansion.entrydns.org:8080/");
+					PusherOptions opts = new PusherOptions().setAuthorizer(auth);
+					mPusher = new Pusher(appPrefs.getKey(), opts);
+					
+					connectionEventManager = new ConnectionEventManager(getApplicationContext(), mPusher);
+					PusherConnectionManager pcm = new PusherConnectionManager(getApplicationContext(), mPusher, PusherConnectionManager.MODE_CONNECT_NEW_MANAGER, connectionEventManager, TAG);
+					pcm.run();
+					registerNetworkBroadcastReceiver();
+					
+					PrivateChannel pChannel = mPusher.subscribePrivate(PRIVATE_CHANNEL, channelEventCoordinator);
+					channelEventCoordinator.assignChannelToCoordinator(pChannel);
+				}catch(Exception e){
+					Log.e(TAG, "Error duing connect to Pusher ["+e.getMessage()+"]");
+					incomingFragment.addItem("An Error has occoured connecting to Pusher","", R.color.haloDarkRed, 255, now);
+				}
 			}			
 			return true;			
 			
 		case R.id.itemDisconnect:
-			pusherConnectionManager = new PusherConnectionManager(this, mPusher, PusherConnectionManager.MODE_CONNECT, TAG);
-			pusherConnectionManager.run();
-			incomingFragment.addItem("Disconnected from Pusher Service","", R.color.haloDarkRed, 255, now);
+			try{
+				pusherConnectionManager = new PusherConnectionManager(this, mPusher, PusherConnectionManager.MODE_DISCONNECT, TAG);
+				pusherConnectionManager.run();
+				incomingFragment.addItem("Disconnected from Pusher Service","", R.color.haloDarkRed, 255, now);
+			}catch(Exception e){
+				Log.e(TAG, "Error duing reconnect to Pusher ["+e.getMessage()+"]");
+				incomingFragment.addItem("An Error has occoured disconnecting from Pusher","(You are probably disconnected now though)", R.color.haloDarkRed, 255, now);
+			}
 			return true;
 			
 		case R.id.itemReconnect:
-			pusherConnectionManager = new PusherConnectionManager(this, mPusher, PusherConnectionManager.MODE_DISCONNECT, TAG);
-			pusherConnectionManager.run();
-			
-			pusherConnectionManager = new PusherConnectionManager(this, mPusher, PusherConnectionManager.MODE_CONNECT, TAG);
-			pusherConnectionManager.run();
-			
-			Toast.makeText(getApplicationContext(),"Reconnecting to Pusher Services",Toast.LENGTH_SHORT).show();
+			try{
+				pusherConnectionManager = new PusherConnectionManager(this, mPusher, PusherConnectionManager.MODE_DISCONNECT, TAG);
+				pusherConnectionManager.run();
+				
+				pusherConnectionManager = new PusherConnectionManager(this, mPusher, PusherConnectionManager.MODE_CONNECT, TAG);
+				pusherConnectionManager.run();
+				
+				Toast.makeText(getApplicationContext(),"Reconnecting to Pusher Services",Toast.LENGTH_SHORT).show();
+				}catch(Exception e){
+					Log.e(TAG, "Error duing reconnect to Pusher ["+e.getMessage()+"]");
+					incomingFragment.addItem("An Error has occoured reconnecting to Pusher","", R.color.haloDarkRed, 255, now);
+				}
 			return true;
 				
 		case R.id.itemClearAll:
@@ -237,10 +256,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 				public void run() {
 					
 					try {
-						jObject = new JSONObject("{requestedDeviceTypes: all, senderType: controller}");
-						channelEventCoordinator.trigger(0, "client-device_poll_new", jObject.toString());
-					} catch (JSONException e) {
-						Log.e(TAG, e.getMessage());
+						channelEventCoordinator.trigger(0, ChannelEventCoordinator.EVENT_POLL_NEW_DEVICE, ChannelEventCoordinator.REQUEST_ALL_NEW_DEVICE);
 					} catch (Exception e) {
 						Log.e(TAG, e.getMessage());
 					}

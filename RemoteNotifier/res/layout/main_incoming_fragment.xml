@@ -47,6 +47,7 @@
         android:layout_alignParentTop="true"
         android:indeterminate="true"
         android:minHeight="10dp"
-        android:paddingTop="12dp" />
+        android:paddingTop="12dp"
+        android:visibility="gone" />
 
 </RelativeLayout>
