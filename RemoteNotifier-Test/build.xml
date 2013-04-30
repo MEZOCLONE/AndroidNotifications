@@ -5,7 +5,8 @@
          It contains the path to the SDK. It should *NOT* be checked into
          Version Control Systems. -->
     <property file="local.properties" />
-
+	<property name="doc.dir" location="doc"/>
+	
     <!-- The ant.properties file can be created by you. It is only edited by the
          'android' tool to add properties to it.
          This is the place to change some Ant specific build properties.
@@ -88,5 +89,10 @@
     -->
     <!-- version-tag: 1 -->
     <import file="${sdk.dir}/tools/ant/build.xml" />
+    
+    <!-- Generate javadocs for current project into ${doc.dir} -->
+	<target name="doc" depends="clean" description="generate documentation">
+	  <javadoc sourcepath="${source.dir}" destdir="${doc.dir}"/>
+	</target>
 
 </project>

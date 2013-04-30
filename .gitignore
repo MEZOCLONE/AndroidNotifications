@@ -34,7 +34,7 @@ gen/
 #################
 
 local.properties
-
+doc/
 
 #################
 ## Visual Studio
