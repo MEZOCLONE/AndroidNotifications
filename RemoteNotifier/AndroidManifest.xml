@@ -1,11 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.matt.remotenotifier"
     android:versionCode="1"
-    android:versionName="0.06wip" android:installLocation="auto">
+    android:versionName="0.07wip" android:installLocation="auto">
 
     <uses-sdk
         android:minSdkVersion="16"
-        android:targetSdkVersion="16" />
+        android:targetSdkVersion="17" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -14,7 +14,8 @@
     <application
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        >
+        android:allowBackup="true">
+        
         <activity
             android:name=".MainFragmentActivity"
             android:label="@string/title_activity_main" >
@@ -24,13 +25,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".BaseNotificationBuilder" >
-            <intent-filter>
-                <action android:name="com.matt.remotenotifier.DsisplayNotification" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
         <activity android:name=".SetPreferences">
             <intent-filter>
                 <action android:name="com.matt.remotenotifier.SetPreferences" />
@@ -38,6 +32,13 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <receiver 
+            android:name="NotificationEventManager"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="cancel_notification"/>
+            </intent-filter>
+        </receiver>
     </application>
     
 </manifest>
