@@ -34,6 +34,7 @@ public class NetworkManager extends BroadcastReceiver {
 	public void onReceive(Context ctx, Intent intent) {
 		NetworkInfo networkInfo = getNetworkInfo(ctx);
 		ConnectionState mPusherState = mPusher.getConnection().getState();
+		Log.d(TAG, "Network manger awoken from sleep");
 		
 	    if(networkInfo != null && networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
 	       Log.d(TAG, "WiFi Connection");

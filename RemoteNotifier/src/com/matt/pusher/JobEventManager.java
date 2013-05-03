@@ -82,7 +82,9 @@ public class JobEventManager implements PrivateChannelEventListener {
 			}catch(JSONException e){
 				Log.i(TAG, "Job ["+jobId+"] did not return any assoicated data");
 			}
+			Log.d(TAG, "Notifiy JobCoordinator and getting job status");
 			int jobCoodinatorStatus = jobCoordinator.handleJobAck(deviceName, deviceType, jobId, retval);
+			Log.d(TAG, "JobCoordinator returned ["+jobCoodinatorStatus+"] as job status for jobId ["+jobId+"]");
 			String returnedparsedData;
 			if (retval != null){
 				returnedparsedData = jobCoordinator.getJobRetval(jobId);
@@ -119,6 +121,7 @@ public class JobEventManager implements PrivateChannelEventListener {
 			
 			@Override
 			public void run() {
+				Log.d(TAG, "Adding new event to incoming list");
 				incomingFragment.addItem(main, sub , colourResourseId, alpha, time);
 				incomingFragment.notifyDataSetChanged();
 			}
