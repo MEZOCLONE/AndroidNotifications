@@ -6,9 +6,12 @@ import java.util.ArrayList;
 import org.json.JSONObject;
 
 import android.app.Notification;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
-import com.matt.remotenotifier.BaseNotificationBuilder;
+import com.matt.remotenotifier.BaseNotificationFactory;
 import com.matt.remotenotifier.DeviceCoordinator;
 import com.matt.remotenotifier.DeviceType;
 import com.matt.remotenotifier.IncomingFragment;
@@ -21,7 +24,7 @@ import com.pusher.client.channel.PrivateChannelEventListener;
  * @author mattm
  *
  */
-public class NotificationEventManager implements PrivateChannelEventListener {
+public class NotificationEventManager extends BroadcastReceiver implements PrivateChannelEventListener  {
 	
 	private static final String TAG = "NotificationEventManager";
 	private IncomingFragment incomingFragment;
@@ -77,29 +80,29 @@ public class NotificationEventManager implements PrivateChannelEventListener {
 					if(true){
 						// TODO: This should use the Event Object used by the notification list. 
 						// It needs to be exposed through the manager, but for the moment, do this.
-						BaseNotificationBuilder notificationBuilder = new BaseNotificationBuilder(incomingFragment.getActivity());
+						BaseNotificationFactory notificationFactory = new BaseNotificationFactory(incomingFragment.getActivity());
 						NotificationEventHolder neh = new NotificationEventHolder(mainText);
 						if(!notificationEventHolderList.contains(neh)){												
 							Log.d(TAG, "Building Notification for this event");
-							Notification.Builder nBuilder = notificationBuilder.buildNotification("["+deviceName+"] "+mainText, subText);
+							Notification.Builder nBuilder = notificationFactory.buildNotification("["+deviceName+"] "+mainText, subText);
 							neh.setmBuilder(nBuilder);
 							neh.setSubText(subText);
 							
 							Log.d(TAG, "Quietly stashing EventTitle");
 							notificationEventHolderList.add(neh);
-							notificationBuilder.showNotification(notificationEventHolderList.indexOf(neh), nBuilder);
+							notificationFactory.showNotification(notificationEventHolderList.indexOf(neh), nBuilder);
 						}else{
 							Log.d(TAG, "Getting Notification.Builder object to update");
 							
 							int index = notificationEventHolderList.indexOf(neh);
 							neh = notificationEventHolderList.get(index);
 							Notification.Builder nBuilder = neh.getmBuilder();
-							Notification.Builder newNBuilder = notificationBuilder.updateNotification(nBuilder, neh.getmTitle(), neh.getNum(), subText, neh.getSubText());
+							Notification.Builder newNBuilder = notificationFactory.updateNotification(nBuilder, neh.getmTitle(), neh.getNum(), subText, neh.getSubText());
 							neh.updateNum();
 							neh.setmBuilder(newNBuilder);
 							neh.setSubText(subText);
 							
-							notificationBuilder.showNotification(index, newNBuilder);
+							notificationFactory.showNotification(index, newNBuilder);
 						}
 					}
 				}
@@ -129,6 +132,14 @@ public class NotificationEventManager implements PrivateChannelEventListener {
 				incomingFragment.notifyDataSetChanged();
 			}
 		});
+	}
+	
+	@Override
+	public void onReceive(Context context, Intent intent) {
+		Log.d(TAG, "onReceive fired");
+		if(intent.getAction().equals("cancel_notification")){
+			Log.d(TAG, "Notification has been cleared");
+		}
 	}
 	
 	class NotificationEventHolder{
@@ -222,5 +233,6 @@ public class NotificationEventManager implements PrivateChannelEventListener {
 			this.subText = subText;
 		}
 	}
+
 	
 }
