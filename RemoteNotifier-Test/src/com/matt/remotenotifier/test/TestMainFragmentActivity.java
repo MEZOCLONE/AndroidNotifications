@@ -42,14 +42,14 @@ public class TestMainFragmentActivity extends ActivityInstrumentationTestCase2<M
 		assertNotNull(deviceCoordinator);
 	}
 	
-	/**
-	 * Test that the {@link JobCoordinator} has started correctly with the application. (started with <i>getActivity()</i>)
-	 * @throws NotActiveException
-	 */
-	public void testJobCoordinatorStartup() throws NotActiveException{
-		JobCoordinator jobCoordinator = JobCoordinator.getInstance();
-		assertNotNull(jobCoordinator);
-	}
+//	/**
+//	 * Test that the {@link JobCoordinator} has started correctly with the application. (started with <i>getActivity()</i>)
+//	 * @throws NotActiveException
+//	 */
+//	public void testJobCoordinatorStartup() throws NotActiveException{
+//		JobCoordinator jobCoordinator = JobCoordinator.getInstance();
+//		assertNotNull(jobCoordinator);
+//	}
 	
 	
 	// Quickly check the laws of physics before we pass...
