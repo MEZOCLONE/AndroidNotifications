@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import org.json.JSONObject;
-
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
@@ -139,20 +137,23 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 	@Override
 	public void onStart(){
 		super.onStart();
+		
+		deviceCoordinator = DeviceCoordinator.getInstance(this);
+		jobCoordinator = JobCoordinator.getInstance(this);
+		channelEventCoordinator = ChannelEventCoordinator.getInstance(incomingFragment, this);
+		
 		try {
-			
-			deviceCoordinator = DeviceCoordinator.getInstance(this);
-			jobCoordinator = JobCoordinator.getInstance(this);
-			
-			channelEventCoordinator = ChannelEventCoordinator.getInstance(incomingFragment, this);
 			if(mPusher != null){
 				PrivateChannel pChannel = mPusher.subscribePrivate(PRIVATE_CHANNEL, channelEventCoordinator);
 				channelEventCoordinator.assignChannelToCoordinator(pChannel);
 			}
-			
+		}catch(Exception e){
+			Log.w(TAG, "Subscribing to private channel caused an error. Probably already subscribed");
+		}
+		
+		try{
 			Log.d(TAG, "Attempting to restore jobHolders");
 			jobCoordinator.restoreJobHolderList(appPrefs.getJobStore());
-			
 		} catch (NotActiveException e) {
 			Log.w(TAG, "Error on JobStore restore", e);
 		} catch (Exception e) {
@@ -255,7 +256,6 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 			
 		case R.id.itemSearchForDevices:
 			Thread pusherPollDevicesManual = new Thread(new Runnable() {
-				JSONObject jObject = null;
 				@Override
 				public void run() {
 					
