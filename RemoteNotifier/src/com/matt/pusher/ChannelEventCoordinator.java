@@ -13,7 +13,7 @@ import android.util.Log;
 import com.matt.pusher.event.DeviceEventManager;
 import com.matt.pusher.event.JobEventManager;
 import com.matt.pusher.event.NotificationEventManager;
-import com.matt.remotenotifier.IncomingFragment;
+import com.matt.remotenotifier.event.EventFragment;
 import com.matt.remotenotifier.R;
 import com.matt.remotenotifier.device.DeviceCoordinator;
 import com.pusher.client.channel.PrivateChannel;
@@ -30,7 +30,7 @@ import com.pusher.client.channel.PrivateChannelEventListener;
  *
  */
 public class ChannelEventCoordinator implements PrivateChannelEventListener {
-	private IncomingFragment incomingFragment;
+	private EventFragment eventFragment;
 	private DeviceCoordinator deviceCoordinator;
 	private ArrayList<PrivateChannel> channelList;
 	private ArrayList<String> eventBindList;
@@ -58,8 +58,8 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 	 * Constructor for the ChannelEventManager
 	 * @param incomingFragment
 	 */
-	protected ChannelEventCoordinator(IncomingFragment incomingFragment, Context ctx) {
-		this.incomingFragment = incomingFragment;
+	protected ChannelEventCoordinator(EventFragment incomingFragment, Context ctx) {
+		this.eventFragment = incomingFragment;
 		this.ctx = ctx;
 		
 		channelList = new ArrayList<PrivateChannel>();
@@ -89,7 +89,7 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 		}
 	}
 	
-	public static ChannelEventCoordinator getInstance(IncomingFragment incomingFragment, Context ctx){
+	public static ChannelEventCoordinator getInstance(EventFragment incomingFragment, Context ctx){
 		if(instance != null){
 			return instance;
 		}else{
@@ -122,20 +122,20 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 	}
 	
 	private void bindToDeviceEvents(PrivateChannel pChannel){
-		DeviceEventManager deviceEventHandler = new DeviceEventManager(incomingFragment);
+		DeviceEventManager deviceEventHandler = new DeviceEventManager(eventFragment);
 		pChannel.bind("register_device", deviceEventHandler);
 		pChannel.bind("deregister_device", deviceEventHandler);
 		pChannel.bind("device_heartbeat", deviceEventHandler);
 	}
 	
 	private void bindToJobEvents(PrivateChannel pChannel){
-		JobEventManager jobEventHandler = new JobEventManager(incomingFragment);
+		JobEventManager jobEventHandler = new JobEventManager(eventFragment);
 		pChannel.bind("device_ack_execute_job", jobEventHandler);
 		pChannel.bind("device_fail_exceute_job", jobEventHandler);
 	}
 	
 	private void bindToNotificationEvents(PrivateChannel pChannel){
-		NotificationEventManager notificationEventHandler = new NotificationEventManager(incomingFragment);
+		NotificationEventManager notificationEventHandler = new NotificationEventManager(eventFragment);
 		pChannel.bind("device_push_notification", notificationEventHandler);
 	}
 
@@ -183,9 +183,9 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 			
 			@Override
 			public void run() {
-				incomingFragment.hideConnectionMessages();
-				incomingFragment.addItem(main, sub , colourResourseId, alpha, time);
-				incomingFragment.notifyDataSetChanged();
+				eventFragment.hideConnectionMessages();
+				eventFragment.addItem(main, sub , colourResourseId, alpha, time);
+				eventFragment.notifyDataSetChanged();
 			}
 		});
 	}

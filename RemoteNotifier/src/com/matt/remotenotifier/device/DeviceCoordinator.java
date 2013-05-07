@@ -20,7 +20,7 @@ import android.util.Log;
  * Singleton instance - Use getInstance 
  */
 public class DeviceCoordinator {
-	private static final String TAG = "DeviceCoordinator";
+	private static final String TAG = DeviceCoordinator.class.getName();
 	private static DeviceCoordinator instance;
 	private Integer deviceCount;
 	private ArrayList<DeviceHolder> deviceList;

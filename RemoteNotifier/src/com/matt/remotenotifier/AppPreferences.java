@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import com.matt.remotenotifier.event.EventHolder;
 import com.matt.remotenotifier.job.JobHolder;
 
 import android.app.Activity;
@@ -19,7 +20,7 @@ import android.util.Base64OutputStream;
 import android.util.Log;
 
 public class AppPreferences {
-	private static String TAG = "RemoteNotifier.appPrefsClass";
+	private static String TAG = AppPreferences.class.getName();
 
 	private static final String APP_SHARED_PREFS = "com.matt.remotenotifier_preferences"; // .xml
 	private SharedPreferences appSharedPreffs;

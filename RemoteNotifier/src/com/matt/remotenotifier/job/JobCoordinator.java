@@ -27,7 +27,7 @@ import android.widget.Toast;
  * Singleton instance - Use getInstance
  */
 public class JobCoordinator {
-	private static String TAG = "JobCoordinator";
+	private static String TAG = JobCoordinator.class.getName();
 	private static JobCoordinator instance;
 	private DeviceCoordinator deviceCoordinator;
 	private ChannelEventCoordinator cec;

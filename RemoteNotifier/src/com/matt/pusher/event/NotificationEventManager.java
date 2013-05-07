@@ -14,7 +14,7 @@ import android.util.Log;
 
 import com.matt.pusher.ChannelEventCoordinator;
 import com.matt.remotenotifier.BaseNotificationFactory;
-import com.matt.remotenotifier.IncomingFragment;
+import com.matt.remotenotifier.event.EventFragment;
 import com.matt.remotenotifier.R;
 import com.matt.remotenotifier.device.DeviceCoordinator;
 import com.matt.remotenotifier.device.DeviceType;
@@ -29,13 +29,13 @@ import com.pusher.client.channel.PrivateChannelEventListener;
  */
 public class NotificationEventManager implements PrivateChannelEventListener  {
 	
-	private static final String TAG = "NotificationEventManager";
-	private IncomingFragment incomingFragment;
+	private static final String TAG = NotificationEventManager.class.getName();
+	private EventFragment eventFragment;
 	private DeviceCoordinator deviceCoordinator;
 	protected static ArrayList<NotificationEventHolder> notificationEventHolderList;
 
-	public NotificationEventManager(IncomingFragment incomingFragment) {
-		this.incomingFragment = incomingFragment;
+	public NotificationEventManager(EventFragment incomingFragment) {
+		this.eventFragment = incomingFragment;
 		notificationEventHolderList = new ArrayList<NotificationEventHolder>();
 		
 		Log.i(TAG, "NotificationEventManager started okay");
@@ -83,7 +83,7 @@ public class NotificationEventManager implements PrivateChannelEventListener  {
 					if(true){
 						// TODO: This should use the Event Object used by the notification list. 
 						// It needs to be exposed through the manager, but for the moment, do this.
-						BaseNotificationFactory notificationFactory = new BaseNotificationFactory(incomingFragment.getActivity());
+						BaseNotificationFactory notificationFactory = new BaseNotificationFactory(eventFragment.getActivity());
 						NotificationEventHolder neh = new NotificationEventHolder(mainText);
 						if(!notificationEventHolderList.contains(neh)){												
 							Log.d(TAG, "Building Notification for this event");
@@ -127,12 +127,12 @@ public class NotificationEventManager implements PrivateChannelEventListener  {
 	}
 	
 	private void addItemToNotificationView(final String main, final String sub, final int colourResourseId, final int alpha, final Long time){
-		incomingFragment.getActivity().runOnUiThread(new Runnable() {
+		eventFragment.getActivity().runOnUiThread(new Runnable() {
 			
 			@Override
 			public void run() {
-				incomingFragment.addItem(main, sub , colourResourseId, alpha, time);
-				incomingFragment.notifyDataSetChanged();
+				eventFragment.addItem(main, sub , colourResourseId, alpha, time);
+				eventFragment.notifyDataSetChanged();
 			}
 		});
 	}

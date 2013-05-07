@@ -8,11 +8,11 @@ import org.json.JSONObject;
 import android.util.Log;
 
 import com.matt.pusher.ChannelEventCoordinator;
-import com.matt.remotenotifier.IncomingFragment;
 import com.matt.remotenotifier.R;
 import com.matt.remotenotifier.device.DeviceCoordinator;
 import com.matt.remotenotifier.device.DeviceHolder;
 import com.matt.remotenotifier.device.DeviceType;
+import com.matt.remotenotifier.event.EventFragment;
 import com.pusher.client.channel.PrivateChannelEventListener;
 
 // Maybe in the future I could use Gson to deserialize the Json straight to the DeviceHolder object. But that's for another time...
@@ -24,12 +24,12 @@ import com.pusher.client.channel.PrivateChannelEventListener;
  */
 public class DeviceEventManager implements PrivateChannelEventListener  {
 
-	private static final String TAG = "RegisterDeviceEventHandler";
+	private static final String TAG = DeviceEventManager.class.getName();
 	private DeviceCoordinator deviceCoordinator;
-	private IncomingFragment incomingFragment;
+	private EventFragment eventFragment;
 	
-	public DeviceEventManager(IncomingFragment incomingFragment){
-		this.incomingFragment = incomingFragment;
+	public DeviceEventManager(EventFragment incomingFragment){
+		this.eventFragment = incomingFragment;
 		Log.i(TAG, "DeviceEventManager started okay");
 	}
 	
@@ -124,12 +124,12 @@ public class DeviceEventManager implements PrivateChannelEventListener  {
 	}
 	
 	private void addItemToNotificationView(final String main, final String sub, final int colourResourseId, final int alpha, final Long time){
-		incomingFragment.getActivity().runOnUiThread(new Runnable() {
+		eventFragment.getActivity().runOnUiThread(new Runnable() {
 			
 			@Override
 			public void run() {
-				incomingFragment.addItem(main, sub , colourResourseId, alpha, time);
-				incomingFragment.notifyDataSetChanged();
+				eventFragment.addItem(main, sub , colourResourseId, alpha, time);
+				eventFragment.notifyDataSetChanged();
 			}
 		});
 	}

@@ -8,7 +8,7 @@ import org.json.JSONObject;
 import android.util.Log;
 
 import com.matt.pusher.ChannelEventCoordinator;
-import com.matt.remotenotifier.IncomingFragment;
+import com.matt.remotenotifier.event.EventFragment;
 import com.matt.remotenotifier.R;
 import com.matt.remotenotifier.device.DeviceType;
 import com.matt.remotenotifier.job.JobCoordinator;
@@ -22,12 +22,12 @@ import com.pusher.client.channel.PrivateChannelEventListener;
  */
 public class JobEventManager implements PrivateChannelEventListener {
 	
-	private static final String TAG = "JobEventManager";
-	private IncomingFragment incomingFragment;
+	private static final String TAG = JobEventManager.class.getName();
+	private EventFragment eventFragment;
 	private JobCoordinator jobCoordinator;
 
-	public JobEventManager(IncomingFragment incomingFragment) {
-		this.incomingFragment = incomingFragment;
+	public JobEventManager(EventFragment incomingFragment) {
+		this.eventFragment = incomingFragment;
 		Log.i(TAG, "JobEventManager started okay");
 	}
 	
@@ -118,13 +118,13 @@ public class JobEventManager implements PrivateChannelEventListener {
 	}
 	
 	private void addItemToNotificationView(final String main, final String sub, final int colourResourseId, final int alpha, final Long time){
-		incomingFragment.getActivity().runOnUiThread(new Runnable() {
+		eventFragment.getActivity().runOnUiThread(new Runnable() {
 			
 			@Override
 			public void run() {
 				Log.d(TAG, "Adding new event to incoming list");
-				incomingFragment.addItem(main, sub , colourResourseId, alpha, time);
-				incomingFragment.notifyDataSetChanged();
+				eventFragment.addItem(main, sub , colourResourseId, alpha, time);
+				eventFragment.notifyDataSetChanged();
 			}
 		});
 	}

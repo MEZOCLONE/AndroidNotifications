@@ -25,6 +25,7 @@ import com.matt.pusher.event.ConnectionEventManager;
 import com.matt.remotenotifier.AppKeyFragment.AppKeyDialogListener;
 import com.matt.remotenotifier.device.DeviceCoordinator;
 import com.matt.remotenotifier.device.DeviceHolder;
+import com.matt.remotenotifier.event.EventFragment;
 import com.matt.remotenotifier.job.JobCoordinator;
 import com.matt.remotenotifier.job.JobHolder;
 import com.pusher.client.Pusher;
@@ -34,10 +35,10 @@ import com.pusher.client.connection.ConnectionState;
 import com.pusher.client.util.HttpAuthorizer;
 
 public class MainFragmentActivity extends FragmentActivity implements AppKeyDialogListener {
-	private static String TAG = "MainFragment";
+	private static String TAG = MainFragmentActivity.class.getName();
 	private Pusher mPusher;
 	private AppPreferences appPrefs;
-	private IncomingFragment incomingFragment;
+	private EventFragment eventFragment;
 	private CommandFragment commandFragment;
 	private DeviceCoordinator deviceCoordinator;
 	private JobCoordinator jobCoordinator;
@@ -56,14 +57,14 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 		setContentView(R.layout.main_pageviewer);
 		
 		List<Fragment> fragments = new Vector<Fragment>();
-		fragments.add(Fragment.instantiate(this, IncomingFragment.class.getName()));
+		fragments.add(Fragment.instantiate(this, EventFragment.class.getName()));
 		fragments.add(Fragment.instantiate(this, CommandFragment.class.getName()));
 		pagerAdapter = PagerAdapterManager.getInstance(super.getSupportFragmentManager(), fragments);
 
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(pagerAdapter);
 
-		incomingFragment = (IncomingFragment) pagerAdapter.getItem(0);
+		eventFragment = (EventFragment) pagerAdapter.getItem(0);
 		commandFragment = (CommandFragment) pagerAdapter.getItem(1);
 		
 		appPrefs = new AppPreferences(getApplicationContext());
@@ -73,7 +74,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 				Log.w(TAG, "Need to get an application key");
 				DialogFragment dialogFragmentAppKey = new AppKeyFragment();
 				dialogFragmentAppKey.show(getSupportFragmentManager(), "dialogFragmentAppKey");
-				incomingFragment.hideConnectionMessages();
+				eventFragment.hideConnectionMessages();
 			} catch (Exception e) {
 				Log.d(TAG, e.getLocalizedMessage());
 			}
@@ -123,7 +124,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 					}
 					runOnUiThread(new Runnable() {
 						public void run() {
-							incomingFragment.notifyDataSetChanged();
+							eventFragment.notifyDataSetChanged();
 						}
 					});
 				}
@@ -147,7 +148,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 		
 		deviceCoordinator = DeviceCoordinator.getInstance(this);
 		jobCoordinator = JobCoordinator.getInstance(this);
-		channelEventCoordinator = ChannelEventCoordinator.getInstance(incomingFragment, this);
+		channelEventCoordinator = ChannelEventCoordinator.getInstance(eventFragment, this);
 		
 		try {
 			if(mPusher != null){
@@ -202,7 +203,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 					Log.d(TAG, "User invoked connect: Attempting connect");
 					
 					// Create a new connection to Pusher.
-					incomingFragment.showConnectionMessages();
+					eventFragment.showConnectionMessages();
 					
 					// TODO: Add this as a preference (Auth Sever)
 					HttpAuthorizer auth = new HttpAuthorizer("http://mansion.entrydns.org:8080/");
@@ -219,7 +220,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 				}catch(Exception e){
 					Log.e(TAG, "Error duing connect to Pusher ["+e.getMessage()+"]");
 					Log.d(TAG, "", e);
-					incomingFragment.addItem("An Error has occoured connecting to Pusher","", R.color.haloDarkRed, 255, now);
+					eventFragment.addItem("An Error has occoured connecting to Pusher","", R.color.haloDarkRed, 255, now);
 				}
 			}			
 			return true;			
@@ -230,11 +231,11 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 				Log.d(TAG, "User invoked disconnect: Attempting disconnect");
 				pusherConnectionManager = new PusherConnectionManager(this, mPusher, PusherConnectionManager.MODE_DISCONNECT, TAG);
 				pusherConnectionManager.run();
-				incomingFragment.addItem("Disconnected from Pusher Service","", R.color.haloDarkRed, 255, now);
+				eventFragment.addItem("Disconnected from Pusher Service","", R.color.haloDarkRed, 255, now);
 			}catch(Exception e){
 				Log.e(TAG, "Error duing reconnect to Pusher ["+e.getMessage()+"]");
 				Log.d(TAG, "", e);
-				incomingFragment.addItem("An Error has occoured disconnecting from Pusher","(You are probably disconnected now though)", R.color.haloDarkRed, 255, now);
+				eventFragment.addItem("An Error has occoured disconnecting from Pusher","(You are probably disconnected now though)", R.color.haloDarkRed, 255, now);
 			}
 			return true;
 			
@@ -251,14 +252,14 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 			}catch(Exception e){
 				Log.e(TAG, "Error duing reconnect to Pusher ["+e.getMessage()+"]");
 				Log.d(TAG, "", e);
-				incomingFragment.addItem("An Error has occoured reconnecting to Pusher","", R.color.haloDarkRed, 255, now);
+				eventFragment.addItem("An Error has occoured reconnecting to Pusher","", R.color.haloDarkRed, 255, now);
 			}
 			return true;
 				
 		case R.id.itemClearAll:
 			try {
-				incomingFragment.clearAll();
-				incomingFragment.addItem("Previous events have been cleared", "", R.color.haloLightGreen, 255, now);
+				eventFragment.removeAll();
+				eventFragment.addItem("Previous events have been cleared", "", R.color.haloLightGreen, 255, now);
 				return true;
 			} catch (Exception e) {
 				Log.d(TAG, e.getMessage());
@@ -278,7 +279,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							incomingFragment.addItem("Searching for Devices...","",R.color.haloLightPurple, 255, now);
+							eventFragment.addItem("Searching for Devices...","",R.color.haloLightPurple, 255, now);
 						}
 					});
 				}

@@ -25,7 +25,7 @@ import android.widget.TextView;
  * It will handle showing what job is up next, refreshing the list and those sorts of things. 
  */
 public class ExpandListAdapter extends BaseExpandableListAdapter  {
-	private static final String TAG = "ExpandListAdapter";
+	private static final String TAG = ExpandListAdapter.class.getName();
 	private LayoutInflater mInflater;
 	private Context ctx;
 	private DeviceCoordinator deviceCoordinator;

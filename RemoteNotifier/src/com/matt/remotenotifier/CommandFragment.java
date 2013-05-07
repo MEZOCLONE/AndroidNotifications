@@ -31,7 +31,7 @@ import android.widget.TextView;
 
 // Look, I'm all grown up and have extended my own class! :)
 public class CommandFragment extends ExpandableListFragment {	
-	private static String TAG = "OutgoingFragment";
+	private static String TAG = CommandFragment.class.getName();
 	public ExpandListAdapter mAdaptor;
 	private DeviceCoordinator deviceCoordinator;
 	private JobCoordinator jobCoordinator;

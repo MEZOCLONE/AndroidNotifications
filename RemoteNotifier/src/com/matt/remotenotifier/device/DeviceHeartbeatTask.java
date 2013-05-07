@@ -10,7 +10,7 @@ import android.util.Log;
 
 public class DeviceHeartbeatTask extends AsyncTask<String, Integer, Long> {
 	
-	private static String TAG = "DeviceHeartbeatTask";
+	private static String TAG = DeviceHeartbeatTask.class.getName();
 	private ChannelEventCoordinator cec;
 	private DeviceCoordinator deviceCoordinator;
 	

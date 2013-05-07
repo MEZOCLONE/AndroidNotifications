@@ -29,7 +29,7 @@ import android.widget.Toast;
 
 
 public class TimePickerFragment extends DialogFragment implements TimePickerDialog.OnTimeSetListener {
-	private static String TAG = "TimePickerFragment";
+	private static String TAG = TimePickerFragment.class.getName();
 	private int group, child;
 	private DeviceCoordinator deviceCoordinator;
 	private JobCoordinator jobCoordinator;
