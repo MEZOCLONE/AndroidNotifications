@@ -1,7 +1,8 @@
-package com.matt.pusher;
+package com.matt.pusher.event;
 
 import java.io.NotActiveException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import org.json.JSONObject;
 
@@ -11,11 +12,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.matt.pusher.ChannelEventCoordinator;
 import com.matt.remotenotifier.BaseNotificationFactory;
-import com.matt.remotenotifier.DeviceCoordinator;
-import com.matt.remotenotifier.DeviceType;
 import com.matt.remotenotifier.IncomingFragment;
 import com.matt.remotenotifier.R;
+import com.matt.remotenotifier.device.DeviceCoordinator;
+import com.matt.remotenotifier.device.DeviceType;
+import com.matt.remotenotifier.notifications.NotificationEventHolder;
 import com.pusher.client.channel.PrivateChannelEventListener;
 
 /**
@@ -24,12 +27,12 @@ import com.pusher.client.channel.PrivateChannelEventListener;
  * @author mattm
  *
  */
-public class NotificationEventManager extends BroadcastReceiver implements PrivateChannelEventListener  {
+public class NotificationEventManager implements PrivateChannelEventListener  {
 	
 	private static final String TAG = "NotificationEventManager";
 	private IncomingFragment incomingFragment;
 	private DeviceCoordinator deviceCoordinator;
-	private ArrayList<NotificationEventHolder> notificationEventHolderList;
+	protected static ArrayList<NotificationEventHolder> notificationEventHolderList;
 
 	public NotificationEventManager(IncomingFragment incomingFragment) {
 		this.incomingFragment = incomingFragment;
@@ -90,19 +93,19 @@ public class NotificationEventManager extends BroadcastReceiver implements Priva
 							
 							Log.d(TAG, "Quietly stashing EventTitle");
 							notificationEventHolderList.add(neh);
-							notificationFactory.showNotification(notificationEventHolderList.indexOf(neh), nBuilder);
+							notificationFactory.showNotification(notificationEventHolderList.indexOf(neh), neh);
 						}else{
 							Log.d(TAG, "Getting Notification.Builder object to update");
 							
 							int index = notificationEventHolderList.indexOf(neh);
 							neh = notificationEventHolderList.get(index);
 							Notification.Builder nBuilder = neh.getmBuilder();
-							Notification.Builder newNBuilder = notificationFactory.updateNotification(nBuilder, neh.getmTitle(), neh.getNum(), subText, neh.getSubText());
+							Notification.Builder newNBuilder = notificationFactory.updateNotification(nBuilder, "["+deviceName+"] "+neh.getmTitle(), neh.getNum(), subText, neh.getSubText());
 							neh.updateNum();
 							neh.setmBuilder(newNBuilder);
 							neh.setSubText(subText);
 							
-							notificationFactory.showNotification(index, newNBuilder);
+							notificationFactory.showNotification(notificationEventHolderList.indexOf(neh), neh);
 						}
 					}
 				}
@@ -134,105 +137,37 @@ public class NotificationEventManager extends BroadcastReceiver implements Priva
 		});
 	}
 	
-	@Override
-	public void onReceive(Context context, Intent intent) {
-		Log.d(TAG, "onReceive fired");
-		if(intent.getAction().equals("cancel_notification")){
-			Log.d(TAG, "Notification has been cleared");
-		}
-	}
-	
-	class NotificationEventHolder{
-		private String mTitle;
-		private String subText;
-		private Notification.Builder mBuilder;
-		int num;
+	/**
+	 * Inner BroadcastReiever in the {@link NotificationEventManager} to handle the user cancelling the notification. 
+	 * @author mattm
+	 *
+	 */
+	public static class NotificationBroadcastEventReciever extends BroadcastReceiver {
 		
-		public NotificationEventHolder(String mTitle) {
-			//this.mBuilder = mBuilder;
-			this.mTitle = mTitle;
-			num = 1;
-		}
-		
-		public void setmBuilder(Notification.Builder mBuilder){
-			this.mBuilder = mBuilder;
-		}
-
-		/**
-		 * @return the mTitle
-		 */
-		public String getmTitle() {
-			return mTitle;
-		}
-
-		/**
-		 * @return the mBuilder
-		 */
-		public Notification.Builder getmBuilder() {
-			return mBuilder;
-		}
-		
-		public int getNum(){
-			return num;
-		}
-		
-		public void updateNum(){
-			num++;
-		}
-
-		/* (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + getOuterType().hashCode();
-			result = prime * result
-					+ ((mTitle == null) ? 0 : mTitle.hashCode());
-			return result;
-		}
-
-		/* (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			NotificationEventHolder other = (NotificationEventHolder) obj;
-			if (!getOuterType().equals(other.getOuterType()))
-				return false;
-			if (mTitle == null) {
-				if (other.mTitle != null)
-					return false;
-			} else if (!mTitle.equals(other.mTitle))
-				return false;
-			return true;
-		}
-
-		private NotificationEventManager getOuterType() {
-			return NotificationEventManager.this;
-		}
-
-		/**
-		 * @return the subText
-		 */
-		public String getSubText() {
-			return subText;
-		}
-
-		/**
-		 * @param subText the subText to set
-		 */
-		public void setSubText(String subText) {
-			this.subText = subText;
+		public void onReceive(Context context, Intent intent) {
+			Log.i(TAG, "Removing notification as requested");
+			if(intent.getAction().equals("cancel_notification")){
+				String nTitle = intent.getStringExtra(BaseNotificationFactory.NOTIFICATION_TITLE);
+				if(nTitle != null){
+					// We are not really going to remove it as if we do, everything in the list will shuffle down and we'll loose
+					// the ability to update other notifications.
+					// Set the title to a guid
+					NotificationEventHolder neh = new NotificationEventHolder(nTitle);
+					if(notificationEventHolderList.contains(neh)){
+						int index = notificationEventHolderList.indexOf(neh);
+						neh = notificationEventHolderList.get(index);
+						neh.setTitle(UUID.randomUUID().toString());
+						notificationEventHolderList.set(index, neh);
+						neh = null;
+					}else{
+						Log.wtf(TAG, "Notification removal event fired but notification list did not contain that notifications data!");
+					}
+					
+					Log.d(TAG, "Notification has been removed");
+				}
+			}
 		}
 	}
 
-	
 }

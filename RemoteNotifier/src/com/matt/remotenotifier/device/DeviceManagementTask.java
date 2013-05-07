@@ -1,12 +1,12 @@
-package com.matt.remotenotifier;
+package com.matt.remotenotifier.device;
 
 import java.io.NotActiveException;
+
+import com.matt.pusher.ChannelEventCoordinator;
 
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-
-import com.matt.pusher.ChannelEventCoordinator;
 
 public class DeviceManagementTask extends AsyncTask<String, Integer, Long> {
 	

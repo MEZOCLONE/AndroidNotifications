@@ -1,8 +1,10 @@
-package com.matt.remotenotifier;
+package com.matt.remotenotifier.job;
 
 import java.io.Serializable;
 
-class JobHolder implements Serializable{
+import com.matt.remotenotifier.device.CommandHolder;
+
+public class JobHolder implements Serializable{
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()

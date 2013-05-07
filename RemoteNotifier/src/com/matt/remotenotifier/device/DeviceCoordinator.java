@@ -1,4 +1,4 @@
-package com.matt.remotenotifier;
+package com.matt.remotenotifier.device;
 
 import java.io.NotActiveException;
 import java.util.ArrayList;
@@ -6,13 +6,15 @@ import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.matt.pusher.ChannelEventCoordinator;
+import com.matt.remotenotifier.CommandFragment;
+import com.matt.remotenotifier.PagerAdapterManager;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-
-import com.matt.pusher.ChannelEventCoordinator;
 
 /*
  * Singleton instance - Use getInstance 

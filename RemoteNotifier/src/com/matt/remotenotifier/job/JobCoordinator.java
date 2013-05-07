@@ -1,4 +1,4 @@
-package com.matt.remotenotifier;
+package com.matt.remotenotifier.job;
 
 import java.io.NotActiveException;
 import java.text.SimpleDateFormat;
@@ -11,13 +11,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.matt.pusher.ChannelEventCoordinator;
+import com.matt.remotenotifier.AppPreferences;
+import com.matt.remotenotifier.device.CommandHolder;
+import com.matt.remotenotifier.device.DeviceCoordinator;
+import com.matt.remotenotifier.device.DeviceHolder;
+import com.matt.remotenotifier.device.DeviceType;
+
 import android.content.Context;
 import android.net.ParseException;
 import android.util.Log;
 import android.widget.Toast;
-
-import com.matt.pusher.ChannelEventCoordinator;
-import com.matt.pusher.ConnectionEventManager;
 
 /*
  * Singleton instance - Use getInstance

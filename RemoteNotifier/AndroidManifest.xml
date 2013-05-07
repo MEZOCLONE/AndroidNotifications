@@ -33,7 +33,7 @@
             </intent-filter>
         </activity>
         <receiver 
-            android:name="NotificationEventManager"
+            android:name="com.matt.pusher.event.NotificationEventManager$NotificationBroadcastEventReciever"
             android:enabled="true">
             <intent-filter>
                 <action android:name="cancel_notification"/>

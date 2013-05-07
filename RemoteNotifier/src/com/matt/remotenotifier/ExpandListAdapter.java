@@ -2,6 +2,11 @@ package com.matt.remotenotifier;
 
 import java.io.NotActiveException;
 
+import com.matt.remotenotifier.device.DeviceCoordinator;
+import com.matt.remotenotifier.device.DeviceHolder;
+import com.matt.remotenotifier.job.JobCoordinator;
+import com.matt.remotenotifier.job.JobHolder;
+
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.graphics.Color;

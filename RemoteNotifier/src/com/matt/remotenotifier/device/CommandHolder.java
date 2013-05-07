@@ -1,4 +1,4 @@
-package com.matt.remotenotifier;
+package com.matt.remotenotifier.device;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ import org.json.JSONObject;
 import android.util.Log;
 
 
-class CommandHolder implements Serializable {
+public class CommandHolder implements Serializable {
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()

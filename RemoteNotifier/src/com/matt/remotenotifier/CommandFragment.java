@@ -4,6 +4,11 @@ import java.io.NotActiveException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.matt.remotenotifier.device.DeviceCoordinator;
+import com.matt.remotenotifier.device.DeviceHolder;
+import com.matt.remotenotifier.job.JobCoordinator;
+import com.matt.remotenotifier.job.TimePickerFragment;
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;

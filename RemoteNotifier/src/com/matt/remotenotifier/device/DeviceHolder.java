@@ -1,4 +1,4 @@
-package com.matt.remotenotifier;
+package com.matt.remotenotifier.device;
 
 import java.io.Serializable;
 import java.util.ArrayList;

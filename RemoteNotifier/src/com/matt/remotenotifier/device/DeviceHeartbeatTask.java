@@ -1,9 +1,6 @@
-package com.matt.remotenotifier;
+package com.matt.remotenotifier.device;
 
 import java.io.NotActiveException;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.matt.pusher.ChannelEventCoordinator;
 

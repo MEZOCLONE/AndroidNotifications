@@ -19,10 +19,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.matt.pusher.ChannelEventCoordinator;
-import com.matt.pusher.ConnectionEventManager;
 import com.matt.pusher.PusherConnectionManager;
+import com.matt.pusher.ChannelEventCoordinator;
+import com.matt.pusher.event.ConnectionEventManager;
 import com.matt.remotenotifier.AppKeyFragment.AppKeyDialogListener;
+import com.matt.remotenotifier.device.DeviceCoordinator;
+import com.matt.remotenotifier.device.DeviceHolder;
+import com.matt.remotenotifier.job.JobCoordinator;
+import com.matt.remotenotifier.job.JobHolder;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.PrivateChannel;
@@ -86,6 +90,9 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 				ArrayList<DeviceHolder> deviceList = (ArrayList<DeviceHolder>) savedInstanceState.getSerializable("deviceList");
 				ArrayList<JobHolder> jobList = (ArrayList<JobHolder>) savedInstanceState.getSerializable("jobList");
 				try {
+					deviceCoordinator = DeviceCoordinator.getInstance();
+					jobCoordinator = JobCoordinator.getInstance();
+					
 					if(deviceList != null){
 						Log.i(TAG, "Expecting Device Coordinator active onRestore of device list");
 						deviceCoordinator.restoreDeviceHolderList(deviceList);
@@ -211,6 +218,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 					channelEventCoordinator.assignChannelToCoordinator(pChannel);
 				}catch(Exception e){
 					Log.e(TAG, "Error duing connect to Pusher ["+e.getMessage()+"]");
+					Log.d(TAG, "", e);
 					incomingFragment.addItem("An Error has occoured connecting to Pusher","", R.color.haloDarkRed, 255, now);
 				}
 			}			
@@ -225,6 +233,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 				incomingFragment.addItem("Disconnected from Pusher Service","", R.color.haloDarkRed, 255, now);
 			}catch(Exception e){
 				Log.e(TAG, "Error duing reconnect to Pusher ["+e.getMessage()+"]");
+				Log.d(TAG, "", e);
 				incomingFragment.addItem("An Error has occoured disconnecting from Pusher","(You are probably disconnected now though)", R.color.haloDarkRed, 255, now);
 			}
 			return true;
@@ -239,10 +248,11 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 				pusherConnectionManager.run();
 				
 				Toast.makeText(getApplicationContext(),"Reconnecting to Pusher Services",Toast.LENGTH_SHORT).show();
-				}catch(Exception e){
-					Log.e(TAG, "Error duing reconnect to Pusher ["+e.getMessage()+"]");
-					incomingFragment.addItem("An Error has occoured reconnecting to Pusher","", R.color.haloDarkRed, 255, now);
-				}
+			}catch(Exception e){
+				Log.e(TAG, "Error duing reconnect to Pusher ["+e.getMessage()+"]");
+				Log.d(TAG, "", e);
+				incomingFragment.addItem("An Error has occoured reconnecting to Pusher","", R.color.haloDarkRed, 255, now);
+			}
 			return true;
 				
 		case R.id.itemClearAll:

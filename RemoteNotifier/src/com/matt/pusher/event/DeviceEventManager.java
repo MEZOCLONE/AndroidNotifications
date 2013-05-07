@@ -1,4 +1,4 @@
-package com.matt.pusher;
+package com.matt.pusher.event;
 
 import java.io.NotActiveException;
 
@@ -7,11 +7,12 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
-import com.matt.remotenotifier.DeviceCoordinator;
-import com.matt.remotenotifier.DeviceHolder;
-import com.matt.remotenotifier.DeviceType;
+import com.matt.pusher.ChannelEventCoordinator;
 import com.matt.remotenotifier.IncomingFragment;
 import com.matt.remotenotifier.R;
+import com.matt.remotenotifier.device.DeviceCoordinator;
+import com.matt.remotenotifier.device.DeviceHolder;
+import com.matt.remotenotifier.device.DeviceType;
 import com.pusher.client.channel.PrivateChannelEventListener;
 
 // Maybe in the future I could use Gson to deserialize the Json straight to the DeviceHolder object. But that's for another time...

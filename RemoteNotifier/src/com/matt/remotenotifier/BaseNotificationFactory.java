@@ -1,6 +1,7 @@
 package com.matt.remotenotifier;
 
-import com.matt.pusher.NotificationEventManager;
+import com.matt.pusher.event.NotificationEventManager.NotificationBroadcastEventReciever;
+import com.matt.remotenotifier.notifications.NotificationEventHolder;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -19,12 +20,13 @@ import android.util.Log;
  */
 public class BaseNotificationFactory {
 	private static final String TAG = BaseNotificationFactory.class.getSimpleName();
+	public static final String NOTIFICATION_TITLE = "com.matt.remotenotifier.NotificationTitle";
 	private Context context;
 	
 	public BaseNotificationFactory(Context context){
 		this.context = context;
 	}
-	
+		
 	/**
 	 * Create a Notification.Builder object with the given parameters. During the creation of this object, setAutoCancel is set true.
 	 * 
@@ -37,8 +39,7 @@ public class BaseNotificationFactory {
 		Notification.Builder mBuilder = new Notification.Builder(context)
         	.setSmallIcon(android.R.drawable.ic_dialog_info)
         	.setContentTitle(nTitle)
-        	.setContentText(nText)
-        	.setDeleteIntent(getDeleteIntent());
+        	.setContentText(nText);
         	//.setAutoCancel(false);
 		return mBuilder;
 	}
@@ -58,7 +59,6 @@ public class BaseNotificationFactory {
 			.setContentText(nText)
 			.setAutoCancel(false)
 			.setOngoing(true)
-			.setDeleteIntent(getDeleteIntent())
 			.setProgress(0, 0, true);
 		return nBuilder;
 	}
@@ -84,7 +84,6 @@ public class BaseNotificationFactory {
 			.setContentText(items[0])
 			.setNumber(nNumber)
 			.setWhen(System.currentTimeMillis())
-			.setDeleteIntent(getDeleteIntent())
 			.setStyle(new Notification.InboxStyle()
 				.addLine(items[0])
 				.addLine(items[1])
@@ -137,19 +136,25 @@ public class BaseNotificationFactory {
 	 * @param nNotification
 	 * @return The nId given
 	 */
-	public int showNotification(int nId, Notification.Builder nNotification){
+	public int showNotification(int nId, NotificationEventHolder notificationEventHolder){
 		NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		
+		Notification.Builder nNotification = notificationEventHolder.getmBuilder();
+		
+		nNotification.setDeleteIntent(getDeleteIntent(notificationEventHolder.getmTitle()));
 		mNotificationManager.notify(nId, nNotification.build());
 		
-		return nId;		
+		return notificationEventHolder.getNum();		
 	}
 	
-	protected PendingIntent getDeleteIntent(){
+	protected PendingIntent getDeleteIntent(String nTitle){
 		Log.d(TAG, "Creating PendingIntent for notificaiton");
-		Intent intent = new Intent(context, NotificationEventManager.class);
-		intent.setAction("cancel_notification");
 		
-		return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+		Intent intent = new Intent(context, NotificationBroadcastEventReciever.class);
+		intent.setAction("cancel_notification");
+		intent.putExtra(NOTIFICATION_TITLE, nTitle);
+		
+		return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 	}
 	
 	

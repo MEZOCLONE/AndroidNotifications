@@ -10,9 +10,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
-import com.matt.remotenotifier.DeviceCoordinator;
+import com.matt.pusher.event.DeviceEventManager;
+import com.matt.pusher.event.JobEventManager;
+import com.matt.pusher.event.NotificationEventManager;
 import com.matt.remotenotifier.IncomingFragment;
 import com.matt.remotenotifier.R;
+import com.matt.remotenotifier.device.DeviceCoordinator;
 import com.pusher.client.channel.PrivateChannel;
 import com.pusher.client.channel.PrivateChannelEventListener;
 
@@ -108,6 +111,14 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 		bindToDeviceEvents(pChannel);
 		bindToJobEvents(pChannel);
 		bindToNotificationEvents(pChannel);
+	}
+	
+	public boolean isAssigned(PrivateChannel pChannel){
+		if(channelList.contains(pChannel)){
+			return true;
+		}else{
+			return false;
+		}
 	}
 	
 	private void bindToDeviceEvents(PrivateChannel pChannel){

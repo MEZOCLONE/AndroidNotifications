@@ -1,4 +1,4 @@
-package com.matt.pusher;
+package com.matt.pusher.event;
 
 import java.io.NotActiveException;
 
@@ -7,10 +7,11 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
-import com.matt.remotenotifier.DeviceType;
+import com.matt.pusher.ChannelEventCoordinator;
 import com.matt.remotenotifier.IncomingFragment;
-import com.matt.remotenotifier.JobCoordinator;
 import com.matt.remotenotifier.R;
+import com.matt.remotenotifier.device.DeviceType;
+import com.matt.remotenotifier.job.JobCoordinator;
 import com.pusher.client.channel.PrivateChannelEventListener;
 
 /**

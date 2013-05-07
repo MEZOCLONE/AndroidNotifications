@@ -1,4 +1,4 @@
-package com.matt.remotenotifier;
+package com.matt.remotenotifier.job;
 
 import java.io.NotActiveException;
 import java.text.SimpleDateFormat;
@@ -7,6 +7,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import com.matt.remotenotifier.device.DeviceCoordinator;
+import com.matt.remotenotifier.device.DeviceHolder;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;

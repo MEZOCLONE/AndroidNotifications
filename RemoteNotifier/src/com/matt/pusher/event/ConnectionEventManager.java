@@ -1,8 +1,9 @@
-package com.matt.pusher;
+package com.matt.pusher.event;
 
 import android.content.Context;
 import android.util.Log;
 
+import com.matt.pusher.PusherConnectionManager;
 import com.matt.remotenotifier.NetworkManager;
 import com.pusher.client.Pusher;
 import com.pusher.client.connection.ConnectionEventListener;

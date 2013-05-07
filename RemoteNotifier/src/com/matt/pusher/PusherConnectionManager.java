@@ -3,6 +3,7 @@ package com.matt.pusher;
 import android.content.Context;
 import android.util.Log;
 
+import com.matt.pusher.event.ConnectionEventManager;
 import com.matt.remotenotifier.NetworkManager;
 import com.pusher.client.Pusher;
 
