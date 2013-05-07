@@ -2,12 +2,11 @@ package com.matt.remotenotifier.test;
 
 import java.io.NotActiveException;
 
-import com.matt.remotenotifier.DeviceCoordinator;
-import com.matt.remotenotifier.JobCoordinator;
-import com.matt.remotenotifier.MainFragmentActivity;
-
 import android.app.Activity;
 import android.test.ActivityInstrumentationTestCase2;
+
+import com.matt.remotenotifier.MainFragmentActivity;
+import com.matt.remotenotifier.device.DeviceCoordinator;
 
 /**
  * Test case that tests the main startup and runtimes of RemoteNotifier
