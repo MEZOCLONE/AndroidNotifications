@@ -39,6 +39,7 @@ public class JobHolder implements Serializable{
 	}
 
 	private static final long serialVersionUID = -723350147229888172L;
+	private long columnId;
 	private int jobId;
 	private int jobProgress;
 	private int deviceId;
@@ -55,7 +56,6 @@ public class JobHolder implements Serializable{
 		this.jobName = jobName;
 		this.deviceId = deviceId;
 		this.jobCommandHolder = jobCommand;
-		jobCreateTime = System.currentTimeMillis();
 		jobComplete = false;
 		jobRecieved = false;
 		jobProgress = 0;	
@@ -184,5 +184,17 @@ public class JobHolder implements Serializable{
 	 */
 	public void setRunDateTime(String runDateTime) {
 		this.runDateTime = runDateTime;
+	}
+
+	public long getColumnId() {
+		return columnId;
+	}
+
+	public void setColumnId(long columnId) {
+		this.columnId = columnId;
+	}
+	
+	public void setJobCreatedTime(long time){
+		this.jobCreateTime = time;
 	}
 }
