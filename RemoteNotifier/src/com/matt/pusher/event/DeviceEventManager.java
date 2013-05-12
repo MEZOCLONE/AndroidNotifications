@@ -24,7 +24,7 @@ import com.pusher.client.channel.PrivateChannelEventListener;
  */
 public class DeviceEventManager implements PrivateChannelEventListener  {
 
-	private static final String TAG = DeviceEventManager.class.getName();
+	private static final String TAG = DeviceEventManager.class.getSimpleName();
 	private DeviceCoordinator deviceCoordinator;
 	private EventFragment eventFragment;
 	
@@ -79,22 +79,26 @@ public class DeviceEventManager implements PrivateChannelEventListener  {
 		}
 	}
 
-	private void handleRegisterDeviceEvent(String data) {
+	private void handleRegisterDeviceEvent(String data) {			
 		try{
 			//Gson gson = new Gson();
 			//DeviceHolder deviceHolder = gson.fromJson(data, DeviceHolder.class);
 			JSONObject eventData = ChannelEventCoordinator.toJsonObject(data);
-			DeviceHolder deviceHolder = deviceCoordinator.getNewDeviceHolder(eventData.getString("deviceName"),  DeviceType.valueOf(eventData.getString("deviceType")));
-			Log.d(TAG, "Incoming request to register device ["+eventData.getString("deviceName")+"]");
-			if(!deviceCoordinator.deviceHolderExists(deviceHolder)){
-				if(deviceCoordinator.registerDevice(deviceHolder) != -1){
-					//We do this separately as a device may not have supplied a command list at registration
-					deviceCoordinator.addCommandsToDevice(deviceHolder, eventData);
-					Long now = System.currentTimeMillis();
-					addItemToNotificationView("Device "+deviceHolder.getDeviceName()+" registered", "", R.color.haloLightOrange, 120, now);
+			if(eventData.getString("deviceTag").equals(ChannelEventCoordinator.DEVICE_TAG)){
+				DeviceHolder deviceHolder = new DeviceHolder(eventData.getString("deviceName"),  DeviceType.valueOf(eventData.getString("deviceType")));
+				Log.d(TAG, "Incoming request to register device ["+eventData.getString("deviceName")+"]");
+				if(!deviceCoordinator.deviceHolderExists(deviceHolder)){
+					if(deviceCoordinator.registerDevice(deviceHolder) != -1){
+						//We do this separately as a device may not have supplied a command list at registration
+						deviceCoordinator.configureDevice(deviceHolder, eventData);
+						Long now = System.currentTimeMillis();
+						addItemToNotificationView("Device "+deviceHolder.getDeviceName()+" registered", "", R.color.haloLightOrange, 120, now);
+					}
+				}else{
+					Log.i(TAG, "Device ["+deviceHolder.getDeviceName()+"] is already registered. Ingorning");
 				}
 			}else{
-				Log.i(TAG, "Device ["+deviceHolder.getDeviceName()+"] is already registered. Ingorning");
+				Log.d(TAG, "I'm not assoicated with the DeviceTag ["+eventData.getString("deviceTag")+"]");
 			}
 		}catch(Exception e){
 			Log.e(TAG, "Unable to parse register_device event ["+e.getMessage()+"]", e);

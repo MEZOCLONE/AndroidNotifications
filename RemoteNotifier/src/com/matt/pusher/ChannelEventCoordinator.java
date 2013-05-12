@@ -37,12 +37,14 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 	private Context ctx;
 	private static String TAG = "ChannelEventCoordinator";
 	private static ChannelEventCoordinator instance;
+	
+	public static String DEVICE_TAG = "Test";
 
 	/*
 	 * Trigger event data statics
 	 */
-	public static final String REQUEST_ALL_NEW_DEVICE = "{requestedDevice: all, senderType: controller}";
-	public static final String REQUEST_ALL_HEARTBEAT = "{requestedDevice: all, senderType: controller}";
+	public static final String REQUEST_ALL_NEW_DEVICE = "{requestedDevice: all, requestedDeviceTag: "+DEVICE_TAG+", senderType: controller}";
+	public static final String REQUEST_ALL_HEARTBEAT = "{requestedDevice: all, requestedDeviceTag: "+DEVICE_TAG+", senderType: controller}";
 	
 	
 	/*
@@ -173,7 +175,7 @@ public class ChannelEventCoordinator implements PrivateChannelEventListener {
 			channelList.get(channelId).trigger(eventName, data);
 		}catch(ArrayIndexOutOfBoundsException e){
 			Log.e(TAG, "ChannelId ["+channelId+"] does not exist or not assigned to this coordinator");
-			throw new Exception("Channel Not Found on this coordinator");
+			throw new Exception("Channel not found on this coordinator");
 		}
 	}
 	
