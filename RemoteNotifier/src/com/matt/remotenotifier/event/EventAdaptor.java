@@ -35,12 +35,12 @@ class EventAdaptor extends BaseAdapter {
 		mInflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		
 		eventDao = new EventDao(ctx);
-		eventDao.open();
-		
-		eventList = eventDao.getAllEvents();
 	}
 	
 	protected void addEvent(String mainText, String subText, int iconId, int rowAlpha, Long time){
+		if(subText.length() > 0){
+			subText = subText.concat(System.getProperty("line.separator"));
+		}
 		EventHolder eh = eventDao.createEvent(mainText, subText, iconId, rowAlpha, time);
 		eventList.add(0, eh);
 		notifyDataSetChanged();
