@@ -5,6 +5,7 @@ import java.io.Serializable;
 class ArgumentHolder implements Serializable {
 
 	private static final long serialVersionUID = -4356288395022804837L;
+	private Long id;
 	private String argType;
 	private String argName;
 	private String argValue;
@@ -27,7 +28,15 @@ class ArgumentHolder implements Serializable {
 		return argValue;
 	}
 	
+	public Long getId(){
+		return id;
+	}
+	
 	public void setArgValue(String argValue){
 		this.argValue = argValue;
+	}
+	
+	public void setId(Long id){
+		this.id = id;
 	}
 }

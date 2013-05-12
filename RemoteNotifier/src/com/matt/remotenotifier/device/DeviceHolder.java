@@ -3,10 +3,6 @@ package com.matt.remotenotifier.device;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 
 public class DeviceHolder implements Serializable{
 
@@ -47,9 +43,10 @@ public class DeviceHolder implements Serializable{
 	}
 
 	private static final long serialVersionUID = 4944535428907433023L;
+	private Long id;
 	private String deviceName;
 	private DeviceType deviceType;
-	private ArrayList<CommandHolder> commandListing;
+	private ArrayList<CommandHolder> commandList;
 	private Long lastHeatbeatTime;
 	private boolean hasHeartbeat = false;
 
@@ -66,7 +63,7 @@ public class DeviceHolder implements Serializable{
 		this.deviceName = deviceName;
 		this.deviceType = deviceType;
 		lastHeatbeatTime = System.currentTimeMillis();
-		commandListing = new ArrayList<CommandHolder>();
+		commandList = new ArrayList<CommandHolder>();
 	}
 
 	public String getDeviceName() {
@@ -77,39 +74,46 @@ public class DeviceHolder implements Serializable{
 		return deviceType;
 	}
 	
-	protected void addCommand(JSONObject commandList) throws JSONException{
-		JSONArray commandArray = commandList.getJSONArray("commands");
-		for(int i=0; i < commandArray.length(); ++i){
-			JSONObject j = commandArray.getJSONObject(i);
-			CommandHolder com = new CommandHolder(j.getString("name"),j.getString("com"));
-			commandListing.add(com);
-			com.addArguments(j);
-		}
-	}
-	
 	protected void addCommand(String name, String command){
 		CommandHolder com = new CommandHolder(name, command);
-		commandListing.add(com);
+		commandList.add(com);
+	}
+	
+	protected void addCommand(CommandHolder command){
+		commandList.add(command);
+	}
+	
+	protected void restoreCommandList(ArrayList<CommandHolder> commandList){
+		this.commandList.clear();
+		this.commandList = commandList;
 	}
 	
 	public int getCommandCount(){
-		return commandListing.size();
+		return commandList.size();
 	}
 	
 	public CommandHolder getCommandHolder(int i){
-		return commandListing.get(i);
+		return commandList.get(i);
 	}
 	
 	public String getCommndName(int i){
-		return commandListing.get(i).getName();
+		return commandList.get(i).getName();
 	}
 	
 	public String getCommand(int i){
-		return commandListing.get(i).getCommand();
+		return commandList.get(i).getCommand();
+	}
+	
+	protected ArrayList<CommandHolder> getCommandList(){
+		return commandList;
 	}
 	
 	public Long getLastHeatbeatTime() {
 		return lastHeatbeatTime;
+	}
+	
+	public Long getId(){
+		return id;
 	}
 
 	public void touchHeartbeatTime(){
@@ -119,5 +123,9 @@ public class DeviceHolder implements Serializable{
 
 	public boolean hasHeartbeat() {
 		return hasHeartbeat;
+	}
+	
+	public void setId(Long Id){
+		this.id = Id;
 	}
 }

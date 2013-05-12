@@ -20,7 +20,7 @@ public class CommandHolder implements Serializable {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ ((argumentListing == null) ? 0 : argumentListing.hashCode());
+				+ ((argumentList == null) ? 0 : argumentList.hashCode());
 		result = prime * result + ((command == null) ? 0 : command.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
@@ -38,10 +38,10 @@ public class CommandHolder implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		CommandHolder other = (CommandHolder) obj;
-		if (argumentListing == null) {
-			if (other.argumentListing != null)
+		if (argumentList == null) {
+			if (other.argumentList != null)
 				return false;
-		} else if (!argumentListing.equals(other.argumentListing))
+		} else if (!argumentList.equals(other.argumentList))
 			return false;
 		if (command == null) {
 			if (other.command != null)
@@ -57,16 +57,17 @@ public class CommandHolder implements Serializable {
 	}
 
 	private static final long serialVersionUID = 4560648720023407165L;
-	private static final String TAG = "DeviceCoordinator - CommandHolder";
+	private static final String TAG = CommandHolder.class.getSimpleName();
+	private Long id;
 	private String name;
 	private String command;
-	private ArrayList<ArgumentHolder> argumentListing;
+	private ArrayList<ArgumentHolder> argumentList;
 	private ArrayList<Integer> associatedJobIds;
 	
 	public CommandHolder(String name, String command){
 		this.name = name;
 		this.command = command;
-		argumentListing = new ArrayList<ArgumentHolder>();
+		argumentList = new ArrayList<ArgumentHolder>();
 		associatedJobIds = new ArrayList<Integer>();
 	}
 
@@ -79,23 +80,31 @@ public class CommandHolder implements Serializable {
 	}
 	
 	public String getArgumentName(int i){
-		return argumentListing.get(i).getArgName();
+		return argumentList.get(i).getArgName();
 	}
 	
 	public String getArgumentType(int i){
-		return argumentListing.get(i).getArgType();
+		return argumentList.get(i).getArgType();
 	}
 	
 	public String getArgumentValue(int i){
-		return argumentListing.get(i).getArgValue();
+		return argumentList.get(i).getArgValue();
 	}
 	
-	public void setArgumentValue(int i, String argValue){
-		argumentListing.get(i).setArgValue(argValue);
+	public ArgumentHolder getArgument(int index){
+		return argumentList.get(index);
+	}
+	
+	protected void setArgumentValue(int argumentId, String argumentValue){
+		argumentList.get(argumentId).setArgValue(argumentValue);
+	}
+	
+	protected void setId(Long id){
+		this.id = id;
 	}
 	
 	public int getArgsCount(){
-		return argumentListing.size();
+		return argumentList.size();
 	}
 	
 	public void addJobId(int jobId){
@@ -114,24 +123,26 @@ public class CommandHolder implements Serializable {
 		return associatedJobIds.size();
 	}
 	
+	public Long getId(){
+		return id;
+	}
+	
 	public ArrayList<Integer> getAssoicatedJobList() {
 		return associatedJobIds;
 	}
 	
-	protected void addArguments(JSONObject commandObj) throws JSONException{
-		JSONArray argArray;
-		try{
-			argArray = commandObj.getJSONArray("args");
-		}catch(JSONException e){
-			Log.w(TAG, "No arguments found for command ["+commandObj.getString("name")+"]");
-			return;
-		}
-		Log.d(TAG, "Arguments found for command ["+commandObj.getString("name")+"]");
-		for(int i=0; i < argArray.length(); ++i){
-			JSONObject j = argArray.getJSONObject(i);
-			Log.d(TAG, "Adding ["+j.getString("name")+"] with type ["+j.getString("type")+"]");
-			ArgumentHolder com = new ArgumentHolder(j.getString("name"),j.getString("type"));
-			argumentListing.add(com);
-		}
+	protected void restoreArgumentList(ArrayList<ArgumentHolder> argumentList){
+		this.argumentList.clear();
+		this.argumentList = argumentList;
 	}
+	
+	protected void addArgument(String name, String type){
+		ArgumentHolder arg = new ArgumentHolder(name, type);
+		argumentList.add(arg);
+	}
+	
+	protected void addArgument(ArgumentHolder argument){
+		argumentList.add(argument);
+	}
+	
 }
