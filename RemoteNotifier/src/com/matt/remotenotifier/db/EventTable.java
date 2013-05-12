@@ -11,12 +11,11 @@ import android.util.Log;
  * @author mattm
  *
  */
-public class EventTable {
+public class EventTable extends BaseTable {
 	
-	private static final String TAG = EventTable.class.getName();
+	private static final String TAG = EventTable.class.getSimpleName();
 	
-	public static final String TABLE_EVENT = "tbl_event";
-	public static final String COLUMN_ID = "_id";
+	public static final String TABLE_NAME = TABLE_PREFIX + "event";
 	public static final String COLUMN_MAIN_TEXT = "main_text";
 	public static final String COLUMN_SUB_TEXT = "sub_text";
 	public static final String COLUMN_ICON = "icon_resid";
@@ -25,7 +24,7 @@ public class EventTable {
 	
 
 	 private static final String DATABASE_CREATE = "create table " 
-		      + TABLE_EVENT
+		      + TABLE_NAME
 		      + "(" 
 		      + COLUMN_ID + " INTEGER primary key autoincrement, " 
 		      + COLUMN_MAIN_TEXT + " TEXT not null, " 
@@ -36,16 +35,14 @@ public class EventTable {
 		      + ");";
 	 
 	 public static void onCreate(SQLiteDatabase database) {
-		 Log.i(TAG,"Creating db table [" +TABLE_EVENT+ "]");
+		 Log.i(TAG,"Creating db table [" +TABLE_NAME+ "]");
 		 database.execSQL(DATABASE_CREATE);
 	 }
 	 
 	 public static void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
-	    Log.i(TAG, "Upgrading database from version [" +oldVersion+ "] to [" +newVersion+ "]");
-	    database.execSQL("DROP TABLE IF EXISTS " + TABLE_EVENT);
+		 Log.i(TAG, "Upgrading database table [" +TABLE_NAME+ "] from version [" +oldVersion+ "] to [" +newVersion+ "]");
+	    database.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
 	    onCreate(database);
 	 }
 	 
-	 
-
 }
