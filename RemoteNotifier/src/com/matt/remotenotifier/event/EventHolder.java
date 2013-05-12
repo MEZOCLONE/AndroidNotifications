@@ -1,15 +1,13 @@
 package com.matt.remotenotifier.event;
 
-import java.io.Serializable;
 
 /**
  * Domain object that holds the Event
  * @author mattm
  *
  */
-public class EventHolder implements Serializable {
+public class EventHolder {
 
-	private static final long serialVersionUID = -102973054041517660L;
 	private int id;
 	private String textMain;
 	private String textSub;
