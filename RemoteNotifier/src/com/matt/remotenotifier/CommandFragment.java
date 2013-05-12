@@ -31,8 +31,8 @@ import android.widget.TextView;
 
 // Look, I'm all grown up and have extended my own class! :)
 public class CommandFragment extends ExpandableListFragment {	
-	private static String TAG = CommandFragment.class.getName();
-	public ExpandListAdapter mAdaptor;
+	private static String TAG = CommandFragment.class.getSimpleName();
+	protected ExpandListAdapter mAdaptor;
 	private DeviceCoordinator deviceCoordinator;
 	private JobCoordinator jobCoordinator;
 	
@@ -93,7 +93,7 @@ public class CommandFragment extends ExpandableListFragment {
 					public void onClick(DialogInterface dialog, int whichButton) {
 						for(int i = 0; i < dh.getCommandHolder(childPosition).getArgsCount(); i++){
 							String argValue = allEt.get(i).getText().toString();
-							dh.getCommandHolder(childPosition).setArgumentValue(i, argValue);
+							deviceCoordinator.setArgumentValue(dh, dh.getCommandHolder(childPosition), i, argValue);
 						}
 						int jobId = jobCoordinator.createJob(dh.getCommndName(childPosition), dh.getCommandHolder(childPosition), deviceCoordinator.getDeviceIndex(dh));
 						excuteJobFromFragment(jobId);
@@ -232,4 +232,13 @@ public class CommandFragment extends ExpandableListFragment {
 			}
 		}
 	}
+	
+	public void refreshCommandFragment(){
+		if(mAdaptor != null){
+			mAdaptor.notifyDataSetChanged();
+		}else{
+			Log.w(TAG, "mAdaptor was null");
+		}
+	}
+	
 }
