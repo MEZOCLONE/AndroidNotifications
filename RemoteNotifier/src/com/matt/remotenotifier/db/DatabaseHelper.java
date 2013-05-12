@@ -13,9 +13,9 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
 	
-	private static final String TAG = DatabaseHelper.class.getName();
+	private static final String TAG = DatabaseHelper.class.getSimpleName();
 	private static final String DATABASE_NAME = "remotenotifier.db";
-	private static final int DATABASE_VERSION = 1;
+	private static final int DATABASE_VERSION = 6;
 
 
 	public DatabaseHelper(Context context) {
@@ -29,11 +29,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		EventTable.onCreate(db);
+		CommandTable.onCreate(db);
+		JobTable.onCreate(db);
+		DeviceTable.onCreate(db);
+		ArgumentTable.onCreate(db);
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		EventTable.onUpgrade(db, oldVersion, newVersion);
+		CommandTable.onUpgrade(db, oldVersion, newVersion);
+		JobTable.onUpgrade(db, oldVersion, newVersion);
+		DeviceTable.onUpgrade(db, oldVersion, newVersion);
+		ArgumentTable.onUpgrade(db, oldVersion, newVersion);
 	}
 
 }
