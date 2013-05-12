@@ -34,8 +34,10 @@ import com.pusher.client.channel.PrivateChannel;
 import com.pusher.client.connection.ConnectionState;
 import com.pusher.client.util.HttpAuthorizer;
 
+import com.bugsense.trace.BugSenseHandler;
+
 public class MainFragmentActivity extends FragmentActivity implements AppKeyDialogListener {
-	private static String TAG = MainFragmentActivity.class.getName();
+	private static String TAG = MainFragmentActivity.class.getSimpleName();
 	private Pusher mPusher;
 	private AppPreferences appPrefs;
 	private EventFragment eventFragment;
@@ -54,6 +56,7 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		BugSenseHandler.initAndStartSession(this, "0ae806ba");
 		setContentView(R.layout.main_pageviewer);
 		
 		List<Fragment> fragments = new Vector<Fragment>();
@@ -88,16 +91,10 @@ public class MainFragmentActivity extends FragmentActivity implements AppKeyDial
 		if(savedInstanceState != null){
 			Log.i(TAG, "Resuming Saved Sate");
 			if(!savedInstanceState.isEmpty()){
-				ArrayList<DeviceHolder> deviceList = (ArrayList<DeviceHolder>) savedInstanceState.getSerializable("deviceList");
 				ArrayList<JobHolder> jobList = (ArrayList<JobHolder>) savedInstanceState.getSerializable("jobList");
 				try {
-					deviceCoordinator = DeviceCoordinator.getInstance();
 					jobCoordinator = JobCoordinator.getInstance();
 					
-					if(deviceList != null){
-						Log.i(TAG, "Expecting Device Coordinator active onRestore of device list");
-						deviceCoordinator.restoreDeviceHolderList(deviceList);
-					}
 					if(jobList != null){
 						Log.i(TAG, "Expecting Job Coordinator active onRestore of job list");
 						jobCoordinator.restoreJobHolderList(jobList);
