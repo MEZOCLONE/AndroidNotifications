@@ -10,7 +10,7 @@ import android.util.Log;
 
 public class DeviceManagementTask extends AsyncTask<String, Integer, Long> {
 	
-	private static String TAG = DeviceManagementTask.class.getName();
+	private static String TAG = DeviceManagementTask.class.getSimpleName();
 	private ChannelEventCoordinator cec;
 	
 	public DeviceManagementTask(Context ctx){

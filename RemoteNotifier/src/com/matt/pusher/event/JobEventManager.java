@@ -22,7 +22,7 @@ import com.pusher.client.channel.PrivateChannelEventListener;
  */
 public class JobEventManager implements PrivateChannelEventListener {
 	
-	private static final String TAG = JobEventManager.class.getName();
+	private static final String TAG = JobEventManager.class.getSimpleName();
 	private EventFragment eventFragment;
 	private JobCoordinator jobCoordinator;
 

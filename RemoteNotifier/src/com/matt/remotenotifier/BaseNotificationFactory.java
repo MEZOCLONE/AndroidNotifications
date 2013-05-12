@@ -19,7 +19,7 @@ import android.util.Log;
  *
  */
 public class BaseNotificationFactory {
-	private static final String TAG = BaseNotificationFactory.class.getName();
+	private static final String TAG = BaseNotificationFactory.class.getSimpleName();
 	public static final String NOTIFICATION_TITLE = "com.matt.remotenotifier.NotificationTitle";
 	private Context context;
 	

@@ -20,7 +20,7 @@ import android.util.Base64OutputStream;
 import android.util.Log;
 
 public class AppPreferences {
-	private static String TAG = AppPreferences.class.getName();
+	private static String TAG = AppPreferences.class.getSimpleName();
 
 	private static final String APP_SHARED_PREFS = "com.matt.remotenotifier_preferences"; // .xml
 	private SharedPreferences appSharedPreffs;

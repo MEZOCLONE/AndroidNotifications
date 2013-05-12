@@ -29,7 +29,7 @@ import android.widget.Toast;
 
 
 public class TimePickerFragment extends DialogFragment implements TimePickerDialog.OnTimeSetListener {
-	private static String TAG = TimePickerFragment.class.getName();
+	private static String TAG = TimePickerFragment.class.getSimpleName();
 	private int group, child;
 	private DeviceCoordinator deviceCoordinator;
 	private JobCoordinator jobCoordinator;
@@ -165,7 +165,7 @@ public class TimePickerFragment extends DialogFragment implements TimePickerDial
 					public void onClick(DialogInterface dialog, int whichButton) {
 						for(int i = 0; i < dh.getCommandHolder(child).getArgsCount(); i++){
 							String argValue = allEt.get(i).getText().toString();
-							dh.getCommandHolder(child).setArgumentValue(i, argValue);
+							deviceCoordinator.setArgumentValue(dh, dh.getCommandHolder(child), i, argValue);
 						}
 						Log.i(TAG, "Creating timed job at ["+createDateTimeString(hourOfDay, minute)+"]");
 						int jobId = jobCoordinator.createTimedJob(dh.getCommndName(child), dh.getCommandHolder(child), deviceCoordinator.getDeviceIndex(dh), createDateTimeString(hourOfDay, minute));

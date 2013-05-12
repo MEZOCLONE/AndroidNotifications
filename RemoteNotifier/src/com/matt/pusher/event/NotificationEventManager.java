@@ -29,7 +29,7 @@ import com.pusher.client.channel.PrivateChannelEventListener;
  */
 public class NotificationEventManager implements PrivateChannelEventListener  {
 	
-	private static final String TAG = NotificationEventManager.class.getName();
+	private static final String TAG = NotificationEventManager.class.getSimpleName();
 	private EventFragment eventFragment;
 	private DeviceCoordinator deviceCoordinator;
 	protected static ArrayList<NotificationEventHolder> notificationEventHolderList;

@@ -12,7 +12,7 @@ import com.pusher.client.Pusher;
 import com.pusher.client.connection.ConnectionState;
 
 public class NetworkManager extends BroadcastReceiver {
-	private static String TAG = NetworkManager.class.getName();
+	private static String TAG = NetworkManager.class.getSimpleName();
 	private Pusher mPusher;
 	
 	public NetworkManager(Pusher mPusher){

@@ -23,7 +23,7 @@ import com.matt.remotenotifier.R;
 
 public class EventFragment extends ListFragment {
 	
-	private static String TAG = EventFragment.class.getName();
+	private static String TAG = EventFragment.class.getSimpleName();
 	private EventAdaptor mAdaptor;
 	public TextView connectionMessage;
 
