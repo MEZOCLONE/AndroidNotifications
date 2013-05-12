@@ -56,6 +56,7 @@ public class JobHolder implements Serializable{
 		this.jobName = jobName;
 		this.deviceId = deviceId;
 		this.jobCommandHolder = jobCommand;
+		jobCreateTime = System.currentTimeMillis();
 		jobComplete = false;
 		jobRecieved = false;
 		jobProgress = 0;	

@@ -301,7 +301,12 @@ public class JobCoordinator {
 				}
 			}
 		});
-		executeJobThread.start();
+		
+		if(jobId == -1){
+			Toast.makeText(ctx, "Error with executing job", Toast.LENGTH_SHORT).show();
+		}else{
+			executeJobThread.start();
+		}
 	}
 	
 	/**
