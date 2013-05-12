@@ -27,8 +27,9 @@ import android.widget.Toast;
  * Singleton instance - Use getInstance
  */
 public class JobCoordinator {
-	private static String TAG = JobCoordinator.class.getName();
+	private static String TAG = JobCoordinator.class.getSimpleName();
 	private static JobCoordinator instance;
+	private JobDao jobDao;
 	private DeviceCoordinator deviceCoordinator;
 	private ChannelEventCoordinator cec;
 	private ArrayList<JobHolder> jobList;
@@ -43,6 +44,7 @@ public class JobCoordinator {
 	protected JobCoordinator(Context ctx) {
 		jobCount = 0;
 		jobList = new ArrayList<JobHolder>();
+		jobDao = new JobDao(ctx);
 		
 		getChannelEventCoordinatorInstance();
 		getDeviceCoodinatorInstance();
@@ -150,9 +152,6 @@ public class JobCoordinator {
 		}
 	}
 
-	/**
-	 * @return the jobCount
-	 */
 	public int getJobCount() {
 		return jobCount;
 	}
@@ -214,6 +213,7 @@ public class JobCoordinator {
 	public int createJob(String jobName, CommandHolder commandHolder, int deviceId){
 		int jobId;
 		JobHolder jh = new JobHolder(jobName, commandHolder, deviceId);
+				//jobDao.createJob(jobName, commandHolder, deviceId);
 		if(!jobList.contains(jh)){
 			jobList.add(jh);
 			jobId = jobList.indexOf(jh);
@@ -256,7 +256,7 @@ public class JobCoordinator {
 					DeviceHolder dh = deviceCoordinator.getDeviceHolder(jh.getDeviceId());
 					try {
 						Log.i(TAG, "Excuting Job with Id ["+jobId+"]");
-						JSONObject jObject = new JSONObject("{deviceName: "+dh.getDeviceName()+", deviceType: "+dh.getDeviceType().toString()+", command: "+ch.getCommand()+", jobId: "+jobId+"}");
+						JSONObject jObject = new JSONObject("{deviceName: "+dh.getDeviceName()+", deviceType: "+dh.getDeviceType().toString()+", deviceTag: "+ChannelEventCoordinator.DEVICE_TAG+", command: "+ch.getCommand()+", jobId: "+jobId+"}");
 						
 						if(ch.getArgsCount() > 0){
 							Log.d(TAG, "Adding argument values to JSONObject");
@@ -401,7 +401,7 @@ public class JobCoordinator {
 				if(jh != null){
 					try{
 						DeviceHolder dh = deviceCoordinator.getDeviceHolder(getJobHolder(jobId).getDeviceId());
-						String jobCancelEvent = "{deviceName: "+dh.getDeviceName()+", deviceType: "+dh.getDeviceType().toString()+", jobId: "+jobId+"}";
+						String jobCancelEvent = "{deviceName: "+dh.getDeviceName()+", deviceType: "+dh.getDeviceType().toString()+", deviceTag: "+ChannelEventCoordinator.DEVICE_TAG+", jobId: "+jobId+"}";
 						
 						cec.trigger(0, ChannelEventCoordinator.EVENT_CANCEL_JOB, jobCancelEvent);
 					}catch(Exception e){
