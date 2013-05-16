@@ -100,18 +100,20 @@ public class DeviceCoordinator {
 	}
 	
 	private void restoreDeviceHolderList(){
-		deviceList.clear();
-		deviceList = deviceDao.getAllDevices();
-		deviceCount = deviceList.size();
-		
-		for(DeviceHolder device : deviceList){
-			device.restoreCommandList(commandDao.getAllCommands(device));
+		if(instance != null){
+			deviceList.clear();
+			deviceList = deviceDao.getAllDevices();
+			deviceCount = deviceList.size();
 			
-			for(CommandHolder command : device.getCommandList()){
-				command.restoreArgumentList(argumentDao.getAllArguments(command));
+			for(DeviceHolder device : deviceList){
+				device.restoreCommandList(commandDao.getAllCommands(device));
+				
+				for(CommandHolder command : device.getCommandList()){
+					command.restoreArgumentList(argumentDao.getAllArguments(command));
+				}
 			}
+			updateControl();
 		}
-		updateControl();
 	}
 	
 	public boolean deviceHolderExists(String deviceName, DeviceType deviceType){
