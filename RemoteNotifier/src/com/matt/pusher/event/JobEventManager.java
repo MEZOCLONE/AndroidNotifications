@@ -88,7 +88,7 @@ public class JobEventManager implements PrivateChannelEventListener {
 			Log.d(TAG, "JobCoordinator returned ["+jobCoodinatorStatus+"] as job status for jobId ["+jobId+"]");
 			String returnedparsedData;
 			if (retval != null){
-				returnedparsedData = jobCoordinator.getJobRetval(jobId);
+				returnedparsedData = jobCoordinator.getJobReturnValue(jobId);
 			}else{
 				returnedparsedData = "";
 			}
