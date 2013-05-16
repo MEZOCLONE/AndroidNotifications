@@ -154,6 +154,8 @@ public class NotificationEventManager implements PrivateChannelEventListener  {
 					// the ability to update other notifications.
 					// Set the title to a guid
 					NotificationEventHolder neh = new NotificationEventHolder(nTitle);
+					
+					// TODO: notificationEventHolderList could be null at this point
 					if(notificationEventHolderList.contains(neh)){
 						int index = notificationEventHolderList.indexOf(neh);
 						neh = notificationEventHolderList.get(index);
